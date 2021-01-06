@@ -1,11 +1,11 @@
 from flask import flask
-from whack_a_bug_api.helpers.load_config import loadConfig
+from helpers.load_config import loadConfig
 from flask_login import LoginManager
 
 login_manager = LoginManager()
 
 def createApp():
-    app = Flask(__name__)
+    app = Flask(__name__, instance_relative_config=True)
     mode = app.env
     
     Config = loadConfig(mode)
