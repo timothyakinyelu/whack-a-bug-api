@@ -1,14 +1,14 @@
-from whack_a_bug_api.config import *
+from instance.config import app_config, BaseConfig
 
 def loadConfig(MODE):
     """Checks environment variables before loading application"""
     
     try:
         if MODE == 'production':
-            return ProductionConfig
+            return app_config[MODE]
         elif MODE == 'testing':
-            return TestConfig
+            return app_config[MODE]
         else:
-            return DevelopmentConfig
+            return app_config[MODE]
     except ImportError:
         return BaseConfig
