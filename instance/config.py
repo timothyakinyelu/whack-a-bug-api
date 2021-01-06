@@ -7,6 +7,7 @@ class BaseConfig:
     DEBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JSON_SORT_KEYS = False
+    CSRF_ENABLED = True
     
     
 class DevelopmentConfig(BaseConfig):
@@ -19,6 +20,7 @@ class ProductionConfig(BaseConfig):
     """App configuration in production mode"""
     
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    TESTING = False
     
 class TestConfig(BaseConfig):
     """App cofiguration in test mode"""
@@ -28,3 +30,9 @@ class TestConfig(BaseConfig):
     DEBUG = True
     HASH_ROUNDS = 1
     PRESERVE_CONTEXT_ON_EXCEPTION = False
+    
+app_config = {
+    'development': DevelopmentConfig,
+    'production': ProductionConfig,
+    'testing': TestConfig
+}
