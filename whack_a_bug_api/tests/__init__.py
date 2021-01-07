@@ -1,0 +1,1 @@
+# whack_a_bug_api/tests/__init__.py
