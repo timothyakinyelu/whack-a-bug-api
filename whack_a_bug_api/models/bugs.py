@@ -56,6 +56,8 @@ class Bug(db.Model):
     
     @staticmethod
     def get_all():
+        """ Fetch all Bugs from database"""
+        
         return Bug.query.all()
     
     @event.listens_for(db.session, 'before_flush')
