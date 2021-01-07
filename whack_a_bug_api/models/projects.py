@@ -34,6 +34,9 @@ class Project(db.Model):
         lazy = 'joined'
     )
     
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
     
     @staticmethod
     def get_all():
