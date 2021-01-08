@@ -1,7 +1,17 @@
 from whack_a_bug_api.db import db
 from flask_sqlalchemy import event
-from sqlalchemy.schema import Sequence
 
+
+def generate_ticket_ref():
+        last_issue = Bug.query.filter().order_by(Bug.id.desc()).first()
+        if not last_issue:
+            return 'WB1001'
+        
+        ticket_ref = last_issue.ticket_ref
+        ticket_no = int(ticket_ref.split('WB')[-1])
+        new_ticket_no = ticket_no + 1
+        new_ticket_ref = 'WB' + str(new_ticket_no)
+        return new_ticket_ref
 
 class Bug(db.Model):
     """ Model representing bugs table"""
@@ -34,7 +44,7 @@ class Bug(db.Model):
     )
     ticket_ref = db.Column(
         db.String(50),
-        Sequence('bug_ticket_ref_seq', start=1001, increment=1),
+        default=generate_ticket_ref,
         nullable = False
     )
     project_name = db.Column(
