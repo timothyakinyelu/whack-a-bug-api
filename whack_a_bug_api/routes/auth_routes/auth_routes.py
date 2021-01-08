@@ -8,21 +8,29 @@ from whack_a_bug_api.db import db
 @auth.route('/projects', methods=['GET', 'POST'])
 def getProjects():
     if request.method == 'POST':
-        title = request.form.get('title')
-                    
+        title = request.json['title']
+        
         if title:
-            project = Project(title=title)
-            project.save()
-            
-            res = jsonify({
-                'id': project.id,
-                'title': project.title,
-                'created_on': project.created_on,
-                'modified_on': project.modified_on 
-            })
-            res.status_code = 201
-            return res
-            
+            existing_project = Project.query.filter_by(title = title).first()
+                        
+            if existing_project is None:
+                project = Project(title=title)
+                project.save()
+                
+                res = jsonify({
+                    'id': project.id,
+                    'title': project.title,
+                    'created_on': project.created_on,
+                    'modified_on': project.modified_on 
+                })
+                res.status_code = 201
+                return res
+            else:
+                data = {'message': 'Project already exists!'}
+                return make_response(jsonify(data), 409)
+        else:
+            data = {'message': 'Title is required!'}
+            return make_response(jsonify(data), 400)
     else:
         projects = Project.get_all()
         results = []
