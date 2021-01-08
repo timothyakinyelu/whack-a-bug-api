@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify, request, abort
 from whack_a_bug_api.models.projects import Project
 from whack_a_bug_api.models.bugs import Bug
 from . import auth
@@ -40,7 +40,41 @@ def getProjects():
         res.status_code = 200
         return res
     
+@auth.route('/projects/project/<int:id>', methods=['GET'])
+def get_project_by_id(id):
+    project = Project.query.filter_by(id = id).first()
     
+    if not project:
+        abort(404)
+        
+    res = jsonify({
+        'id': project.id,
+        'title': project.title,
+        'created_on': project.created_on,
+        'modified_on': project.modified_on
+    })
+    res.status_code = 200
+    return res
+
+
+@auth.route('/projects/project/<int:id>/update', methods=['PUT'])
+def update_project(id):
+    project = Project.query.filter_by(id = id).first()
+    
+    if not project:
+        abort(404)
+    
+    project.title = request.json['title']
+    project.save()
+    
+    res = jsonify({
+        'id': project.id,
+        'title': project.title,
+        'created_on': project.created_on
+    })
+    res.status_code = 200
+    return res
+
 @auth.route('/bugs', methods=['GET', 'POST'])
 def getBugs():
     if request.method == 'POST':
