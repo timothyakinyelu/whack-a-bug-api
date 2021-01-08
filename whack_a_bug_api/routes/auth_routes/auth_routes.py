@@ -1,4 +1,4 @@
-from flask import jsonify, request, abort
+from flask import jsonify, request, abort, make_response
 from whack_a_bug_api.models.projects import Project
 from whack_a_bug_api.models.bugs import Bug
 from . import auth
@@ -63,17 +63,27 @@ def update_project(id):
     
     if not project:
         abort(404)
+        
+    if request.method == 'PUT':
+        project.title = request.json['title']
+        project.save()
+        
+        res = jsonify({
+            'id': project.id,
+            'title': project.title,
+            'created_on': project.created_on
+        })
+        res.status_code = 200
+        return res
+
+@auth.route('/projects/delete', methods=['DELETE'])
+def delete_project():
+    if request.method == 'DELETE':
+        ids = request.json['selectedIDs']
+        data = Project.delete(ids)
     
-    project.title = request.json['title']
-    project.save()
+        return make_response(jsonify(data), 200)
     
-    res = jsonify({
-        'id': project.id,
-        'title': project.title,
-        'created_on': project.created_on
-    })
-    res.status_code = 200
-    return res
 
 @auth.route('/bugs', methods=['GET', 'POST'])
 def getBugs():
