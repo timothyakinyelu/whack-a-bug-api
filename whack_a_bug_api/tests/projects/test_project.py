@@ -8,7 +8,7 @@ class ProjectTests(BaseCase):
         self.project = {'title': 'Food Blog Design'}
         
         with self.client:
-            res = self.client.post('/projects', data = self.project)
+            res = self.client.post('/projects', data = json.dumps(self.project), content_type = 'application/json')
             self.assertEqual(res.status_code, 201)
             self.assertIn('Food Blog', str(res.data))
             
@@ -16,7 +16,7 @@ class ProjectTests(BaseCase):
         self.project = {'title': 'Food Blog Design'}
         
         with self.client:
-            res = self.client.post('/projects', data = self.project)
+            res = self.client.post('/projects', data = json.dumps(self.project), content_type = 'application/json')
             self.assertEqual(res.status_code, 201)
             
             res = self.client.get('/projects')
@@ -68,3 +68,14 @@ class ProjectTests(BaseCase):
             #check if project still exists
             resp = self.client.get('/projects/project/2')
             self.assertEqual(resp.status_code, 404)
+            
+    def test_project_already_exists(self):
+        existing_project = Project(title = 'Food Blog Design')
+        existing_project.save()
+        
+        self.project = {'title': 'Food Blog Design'}
+        
+        with self.client:
+            res = self.client.post('/projects', data = json.dumps(self.project), content_type = 'application/json')
+            assert b'Project already exists!' in res.data
+            self.assertEqual(res.status_code, 409)
