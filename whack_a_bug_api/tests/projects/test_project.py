@@ -1,5 +1,4 @@
-from whack_a_bug_api.tests.BaseCase import BaseCase
-from whack_a_bug_api.models.projects import Project
+from whack_a_bug_api.tests.baseCase import BaseCase
 
 
 class ProjectTests(BaseCase):
