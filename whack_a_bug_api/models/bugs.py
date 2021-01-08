@@ -64,6 +64,12 @@ class Bug(db.Model):
     )
     
     
+    def save(self):
+        """Commit model values to database"""
+        
+        db.session.add(self)
+        db.session.commit()
+    
     @staticmethod
     def get_all():
         """ Fetch all Bugs from database"""
