@@ -8,20 +8,27 @@ class ProjectTests(BaseCase):
         self.project = {'title': 'Food Blog Design'}
         
         with self.client:
-            res = self.client.post('/projects', data = json.dumps(self.project), content_type = 'application/json')
+            res = self.client.post('/api/main/projects', data = json.dumps(self.project), content_type = 'application/json')
+            
+            data = json.loads(res.data.decode())
+            
+            self.assertTrue(data['status'] == 'success')
+            self.assertTrue(data['message'] == 'Project created successfully!')
             self.assertEqual(res.status_code, 201)
-            self.assertIn('Food Blog', str(res.data))
+            self.assertIn('Food Blog', data['data']['title'])
             
     def test_api_gets_all_projects(self):
         self.project = {'title': 'Food Blog Design'}
         
         with self.client:
-            res = self.client.post('/projects', data = json.dumps(self.project), content_type = 'application/json')
+            res = self.client.post('/api/main/projects', data = json.dumps(self.project), content_type = 'application/json')
             self.assertEqual(res.status_code, 201)
             
-            res = self.client.get('/projects')
+            res = self.client.get('/api/main/projects')
+            data = json.loads(res.data.decode())
+            
             self.assertEqual(res.status_code, 200)
-            self.assertIn('Food Blog', str(res.data))
+            self.assertIn('Food Blog', data['data'][0]['title'])
             
             
     def test_project_can_be_updated(self):
@@ -76,6 +83,8 @@ class ProjectTests(BaseCase):
         self.project = {'title': 'Food Blog Design'}
         
         with self.client:
-            res = self.client.post('/projects', data = json.dumps(self.project), content_type = 'application/json')
-            assert b'Project already exists!' in res.data
+            res = self.client.post('/api/main/projects', data = json.dumps(self.project), content_type = 'application/json')
+            data = json.loads(res.data.decode())
+            
+            self.assertTrue(data['message'] == 'Project already exists!')
             self.assertEqual(res.status_code, 409)
