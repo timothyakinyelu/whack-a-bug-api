@@ -24,7 +24,7 @@ class Bug(db.Model):
         autoincrement = True
     )
     title = db.Column(
-        db.String(50),
+        db.String(255),
         nullable = False
     )
     description = db.Column(
@@ -43,12 +43,12 @@ class Bug(db.Model):
         server_default = 'Ongoing'
     )
     ticket_ref = db.Column(
-        db.String(50),
+        db.String(255),
         default=generate_ticket_ref,
         nullable = False
     )
     project_name = db.Column(
-        db.String(50),
+        db.String(255),
         nullable = False
     )
     project_id = db.Column(

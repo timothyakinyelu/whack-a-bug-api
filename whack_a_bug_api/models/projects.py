@@ -12,7 +12,7 @@ class Project(db.Model):
         autoincrement = True,
     )
     title = db.Column(
-        db.String(50),
+        db.String(255),
         unique = True,
         nullable = False
     )
