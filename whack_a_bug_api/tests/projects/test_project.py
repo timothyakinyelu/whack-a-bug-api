@@ -41,9 +41,11 @@ class ProjectTests(BaseCase):
         
         
         with self.client:
-            res = self.client.put('/projects/project/1/update', data = json.dumps(self.project), content_type = 'application/json')
+            res = self.client.put('/api/main/projects/project/1', data = json.dumps(self.project), content_type = 'application/json')
+            data = json.loads(res.data.decode())
+            
             self.assertEqual(res.status_code, 200)
-            self.assertIn('Fashion', str(res.data))
+            self.assertIn('Fashion', data['data']['title'])
     
     
     def test_api_can_get_project_by_id(self):
@@ -53,7 +55,7 @@ class ProjectTests(BaseCase):
         existing_project2.save()
         
         with self.client:
-            res = self.client.get('/projects/project/2')
+            res = self.client.get('/api/main/projects/project/2')
             self.assertEqual(res.status_code, 200)
             self.assertIn('Ticketing', str(res.data))
             
@@ -67,13 +69,14 @@ class ProjectTests(BaseCase):
         existing_project3.save()
         
         with self.client:
-            res = self.client.delete('/projects/delete', data = json.dumps(dict(selectedIDs = [2])), content_type = 'application/json')
+            res = self.client.delete('/api/main/projects', data = json.dumps(dict(selectedIDs = [2])), content_type = 'application/json')
+            data = json.loads(res.data.decode())
             
             self.assertEqual(res.status_code, 200)
-            self.assertIn('Project(s) deleted', str(res.data))
+            self.assertTrue(data['message'] == 'Project(s) deleted Successfully!')
             
             #check if project still exists
-            resp = self.client.get('/projects/project/2')
+            resp = self.client.get('/api/main/projects/project/2')
             self.assertEqual(resp.status_code, 404)
             
     def test_project_already_exists(self):
