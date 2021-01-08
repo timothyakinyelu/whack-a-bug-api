@@ -1,3 +1,4 @@
+from flask import json
 from whack_a_bug_api.tests.baseCase import BaseCase
 from whack_a_bug_api.models.projects import Project
 from whack_a_bug_api.models.bugs import Bug
@@ -13,10 +14,13 @@ class BugTests(BaseCase):
         }
         
         with self.client:
-            res = self.client.post('/bugs', data = self.bug)
+            res = self.client.post('/api/main/bugs', data = json.dumps(self.bug), content_type = 'application/json')
+            data = json.loads(res.data.decode())
+            
             self.assertEqual(res.status_code, 201)
-            self.assertIn('Unable to login', str(res.data))
-            self.assertIn('WB1001', str(res.data))
+            self.assertIn('Unable to login', data['data']['title'])
+            self.assertIn('WB1001', data['data']['ticket_ref'])
+            self.assertTrue(data['message'] == 'Bug Issue created successfully!')
             
             
     def test_all_issues_can_be_fetched(self):
@@ -29,11 +33,11 @@ class BugTests(BaseCase):
         }
         
         with self.client:
-            res = self.client.post('/bugs', data = self.bug)
+            res = self.client.post('/api/main/bugs', data = json.dumps(self.bug), content_type = 'application/json')
             self.assertEqual(res.status_code, 201)
-            self.assertIn('Unable to login', str(res.data))
-            self.assertIn('WB1001', str(res.data))
             
-            res = self.client.get('/bugs')
-            self.assertEqual(res.status_code, 200)
-            self.assertIn('WB1001', str(res.data))
+            resp = self.client.get('/api/main/bugs')
+            data = json.loads(resp.data.decode())
+            
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('WB1001', data['data'][0]['ticket_ref'])
