@@ -39,6 +39,15 @@ class Project(db.Model):
         
         db.session.add(self)
         db.session.commit()
+        
+    def delete(ids):
+        """Delete selected projects from database"""
+        
+        db.session.query(Project).filter(Project.id.in_(ids)).delete(synchronize_session = False)
+        db.session.commit()
+        
+        data = {'message': 'Project(s) deleted Successfully!'}
+        return data
     
     @staticmethod
     def get_all():
