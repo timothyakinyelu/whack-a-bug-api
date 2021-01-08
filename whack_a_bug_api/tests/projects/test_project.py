@@ -24,10 +24,10 @@ class ProjectTests(BaseCase):
             res = self.client.post('/api/main/projects', data = json.dumps(self.project), content_type = 'application/json')
             self.assertEqual(res.status_code, 201)
             
-            res = self.client.get('/api/main/projects')
-            data = json.loads(res.data.decode())
+            resp = self.client.get('/api/main/projects')
+            data = json.loads(resp.data.decode())
             
-            self.assertEqual(res.status_code, 200)
+            self.assertEqual(resp.status_code, 200)
             self.assertIn('Food Blog', data['data'][0]['title'])
             
             
