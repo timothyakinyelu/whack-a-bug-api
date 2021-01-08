@@ -49,3 +49,22 @@ class ProjectTests(BaseCase):
             res = self.client.get('/projects/project/2')
             self.assertEqual(res.status_code, 200)
             self.assertIn('Ticketing', str(res.data))
+            
+            
+    def test_api_can_delete_projects(self):
+        existing_project1 = Project(title = 'Food Blog Design')
+        existing_project2 = Project(title = 'Ticketing System')
+        existing_project3 = Project(title = 'Mobile app development')
+        existing_project1.save()
+        existing_project2.save()
+        existing_project3.save()
+        
+        with self.client:
+            res = self.client.delete('/projects/delete', data = json.dumps(dict(selectedIDs = [2])), content_type = 'application/json')
+            
+            self.assertEqual(res.status_code, 200)
+            self.assertIn('Project(s) deleted', str(res.data))
+            
+            #check if project still exists
+            resp = self.client.get('/projects/project/2')
+            self.assertEqual(resp.status_code, 404)
