@@ -106,9 +106,7 @@ def getBugs():
                 project_id = project.id
             )
             
-            db.session.add(bug)
-            db.session.flush()
-            db.session.commit()
+            bug.save()
             
             res = jsonify({
                 'id': bug.id,
