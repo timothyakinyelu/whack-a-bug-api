@@ -1,4 +1,6 @@
+from flask import json
 from whack_a_bug_api.tests.baseCase import BaseCase
+from whack_a_bug_api.models.projects import Project
 
 
 class ProjectTests(BaseCase):
@@ -20,3 +22,30 @@ class ProjectTests(BaseCase):
             res = self.client.get('/projects')
             self.assertEqual(res.status_code, 200)
             self.assertIn('Food Blog', str(res.data))
+            
+            
+    def test_project_can_be_updated(self):
+        existing_project1 = Project(title = 'Food Blog Design')
+        existing_project2 = Project(title = 'Ticketing System')
+        existing_project1.save()
+        existing_project2.save()
+        
+        self.project = {'title': 'Fashion Blog Design'}
+        
+        
+        with self.client:
+            res = self.client.put('/projects/project/1/update', data = json.dumps(self.project), content_type = 'application/json')
+            self.assertEqual(res.status_code, 200)
+            self.assertIn('Fashion', str(res.data))
+    
+    
+    def test_api_can_get_project_by_id(self):
+        existing_project1 = Project(title = 'Food Blog Design')
+        existing_project2 = Project(title = 'Ticketing System')
+        existing_project1.save()
+        existing_project2.save()
+        
+        with self.client:
+            res = self.client.get('/projects/project/2')
+            self.assertEqual(res.status_code, 200)
+            self.assertIn('Ticketing', str(res.data))
