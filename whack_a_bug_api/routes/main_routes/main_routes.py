@@ -1,11 +1,11 @@
 from flask import jsonify, request, abort, make_response
 from whack_a_bug_api.models.projects import Project
 from whack_a_bug_api.models.bugs import Bug
-from . import auth
+from . import main
 from whack_a_bug_api.db import db
 
 
-@auth.route('/projects', methods=['GET', 'POST'])
+@main.route('/projects', methods=['GET', 'POST'])
 def getProjects():
     if request.method == 'POST':
         title = request.json['title']
@@ -48,7 +48,7 @@ def getProjects():
         res.status_code = 200
         return res
     
-@auth.route('/projects/project/<int:id>', methods=['GET'])
+@main.route('/projects/project/<int:id>', methods=['GET'])
 def get_project_by_id(id):
     project = Project.query.filter_by(id = id).first()
     
@@ -65,7 +65,7 @@ def get_project_by_id(id):
     return res
 
 
-@auth.route('/projects/project/<int:id>/update', methods=['PUT'])
+@main.route('/projects/project/<int:id>/update', methods=['PUT'])
 def update_project(id):
     project = Project.query.filter_by(id = id).first()
     
@@ -84,7 +84,7 @@ def update_project(id):
         res.status_code = 200
         return res
 
-@auth.route('/projects/delete', methods=['DELETE'])
+@main.route('/projects/delete', methods=['DELETE'])
 def delete_project():
     if request.method == 'DELETE':
         ids = request.json['selectedIDs']
@@ -93,7 +93,7 @@ def delete_project():
         return make_response(jsonify(data), 200)
     
 
-@auth.route('/bugs', methods=['GET', 'POST'])
+@main.route('/bugs', methods=['GET', 'POST'])
 def getBugs():
     if request.method == 'POST':
         title = request.form.get('title')
