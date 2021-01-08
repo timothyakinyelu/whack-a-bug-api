@@ -113,11 +113,68 @@ class SingleProjectView(MethodView):
         except Exception as e:
             res = {'message': str(e)}
             return make_response(jsonify(res), 401)
+     
+
+class BugsView(MethodView):
+    """Class controlling all api routes for bugs"""
+    
+    def get(self):
+        bugs = Bug.get_all()
+        results = []
         
+        for bug in bugs:
+            obj = {}
+            
+            obj['id'] = bug.id
+            obj['title'] = bug.title
+            obj['project_name'] = bug.project_name
+            obj['project_id'] = bug.project_id
+            obj['ticket_ref'] = bug.ticket_ref
+            
+            results.append(obj)
+            
+        res = {'data': results}
+        return make_response(jsonify(res), 200)
+    
+    def post(self):
+        form_data = request.get_json()
+        title = form_data.get('title')
+        projectName = form_data.get('project_name')
+        
+        if title:
+            try:
+                project = Project.query.filter_by(title = projectName).first()
+                
+                bug = Bug(
+                    title = title,
+                    project_name = project.title,
+                    project_id = project.id
+                )
+                bug.save()
+                
+                data = {}
+                data['id'] = bug.id
+                data['title'] = bug.title
+                data['project_id'] = bug.project_id
+                data['ticket_ref'] = bug.ticket_ref
+                
+                res = {
+                    'data': data,
+                    'status': 'success',
+                    'message': 'Bug Issue created successfully!'
+                }
+                return make_response(jsonify(res), 201)
+            except Exception as e:
+                res = {
+                    'status': 'failed',
+                    'message': str(e)
+                }
+                return make_response(jsonify(res), 401)
         
 #define the API resources
 projects_view = ProjectsView.as_view('projects_api')
 single_project_view = SingleProjectView.as_view('single_project_view')
+bugs_view = BugsView.as_view('bugs_api')
 
 #add url rules for endpoints
 main.add_url_rule(
@@ -128,45 +185,7 @@ main.add_url_rule(
     '/api/main/projects/project/<int:id>',
     view_func=single_project_view
 )
-    
-
-@main.route('/bugs', methods=['GET', 'POST'])
-def getBugs():
-    if request.method == 'POST':
-        title = request.form.get('title')
-        project = Project.query.filter_by(title = request.form.get('project_name')).first()
-        
-        if title:
-            bug = Bug(
-                title = title,
-                project_name = project.title,
-                project_id = project.id
-            )
-            
-            bug.save()
-            
-            res = jsonify({
-                'id': bug.id,
-                'title': bug.title,
-                'project_id':bug.project_id,
-                'ticket_ref': bug.ticket_ref
-            })
-            res.status_code = 201
-            return res
-    else:
-        bugs = Bug.get_all()
-        results = []
-        
-        for bug in bugs:
-            obj = {
-                'id': bug.id,
-                'title': bug.title,
-                'project_name': bug.project_name,
-                'project_id':bug.project_id,
-                'ticket_ref': bug.ticket_ref
-            }
-            results.append(obj)
-            
-        res = jsonify(results)
-        res.status_code = 200
-        return res
+main.add_url_rule(
+    '/api/main/bugs',
+    view_func=bugs_view
+)
