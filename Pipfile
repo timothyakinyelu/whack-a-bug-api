@@ -12,6 +12,7 @@ flask-login = "*"
 flask-sqlalchemy = "*"
 flask-testing = "*"
 python-dotenv = "*"
+pyjwt = "*"
 
 [requires]
 python_version = "3.8"
