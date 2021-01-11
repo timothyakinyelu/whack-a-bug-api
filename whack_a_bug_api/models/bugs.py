@@ -55,6 +55,10 @@ class Bug(db.Model):
         db.Integer,
         db.ForeignKey('projects.id')
     )
+    assigned_to = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id')
+    )
     created_on = db.Column(
         db.DateTime,
         default = db.func.current_timestamp()
