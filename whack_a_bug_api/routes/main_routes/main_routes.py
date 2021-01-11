@@ -170,11 +170,31 @@ class BugsView(MethodView):
                     'message': str(e)
                 }
                 return make_response(jsonify(res), 401)
+            
+class SingleBugView(MethodView):
+    """Class controlling routes for editing and updating bug issues"""
+    
+    def get(self, id):
+        bug = Bug.query.filter_by(id = id).first()
+        print(bug)
+        
+        if bug is None:
+            abort(404)
+            
+        data = {}
+        data['id'] = bug.id
+        data['title'] = bug.title
+        data['project_id'] = bug.project_id
+        data['ticket_ref'] = bug.ticket_ref
+        
+        res = {'data': data}
+        return make_response(jsonify(res), 200)
         
 #define the API resources
 projects_view = ProjectsView.as_view('projects_api')
 single_project_view = SingleProjectView.as_view('single_project_view')
 bugs_view = BugsView.as_view('bugs_api')
+single_bug_view = SingleBugView.as_view('single_bug_view')
 
 #add url rules for endpoints
 main.add_url_rule(
@@ -188,4 +208,8 @@ main.add_url_rule(
 main.add_url_rule(
     '/api/main/bugs',
     view_func=bugs_view
+)
+main.add_url_rule(
+    '/api/main/bugs/<int:id>',
+    view_func=single_bug_view
 )
