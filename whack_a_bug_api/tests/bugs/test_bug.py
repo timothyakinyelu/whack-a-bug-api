@@ -41,3 +41,30 @@ class BugTests(BaseCase):
             
             self.assertEqual(resp.status_code, 200)
             self.assertIn('WB1001', data['data'][0]['ticket_ref'])
+            
+    def test_api_can_fetch_issue_by_id(self):
+        project = Project(title = 'Fashion Blog')
+        project.save()
+        
+        self.bug1 = {
+            'title': 'Unable to login',
+            'project_name': 'Fashion Blog'
+        }
+        
+        self.bug2 = {
+            'title': 'Cannot load dashboard',
+            'project_name': 'Fashion Blog'
+        }
+        
+        with self.client:
+            res1 = self.client.post('/api/main/bugs', data = json.dumps(self.bug1), content_type = 'application/json')
+            res2 = self.client.post('/api/main/bugs', data= json.dumps(self.bug2), content_type = 'application/json')
+            
+            self.assertEqual(res1.status_code, 201)
+            self.assertEqual(res2.status_code, 201)
+            
+            res = self.client.get('/api/main/bugs/2')
+            data = json.loads(res.data.decode())
+            
+            self.assertEqual('Cannot load dashboard', data['data']['title'])
+            self.assertEqual(res.status_code, 200)
