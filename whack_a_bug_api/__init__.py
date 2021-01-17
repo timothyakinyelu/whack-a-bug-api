@@ -20,8 +20,10 @@ def createApp():
     with app.app_context():
         #add route blueprints
         from whack_a_bug_api.routes.main_routes import main_routes
+        from whack_a_bug_api.routes.auth_routes import auth_routes
         
         app.register_blueprint(main_routes.main)
+        app.register_blueprint(auth_routes.auth)
         
         db.create_all()
         return app
