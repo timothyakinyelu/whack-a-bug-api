@@ -1,4 +1,4 @@
-# whack_a_bug_api/routes/auth_routes/__init__.py
+# whack_a_bug_api/routes/main_routes/__init__.py
 
 from flask import Blueprint
 
