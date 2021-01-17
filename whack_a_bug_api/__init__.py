@@ -15,7 +15,7 @@ def createApp():
     db.init_app(app)
     login_manager.init_app(app)
     
-    from whack_a_bug_api.models import bugs, projects
+    from whack_a_bug_api.models import bugs, projects, users
     
     with app.app_context():
         #add route blueprints
