@@ -11,6 +11,10 @@ class Project(db.Model):
         primary_key = True,
         autoincrement = True,
     )
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id')
+    )
     title = db.Column(
         db.String(255),
         unique = True,
