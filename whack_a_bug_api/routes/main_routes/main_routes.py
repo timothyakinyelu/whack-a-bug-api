@@ -176,7 +176,6 @@ class SingleBugView(MethodView):
     
     def get(self, id):
         bug = Bug.query.filter_by(id = id).first()
-        print(bug)
         
         if bug is None:
             abort(404)
