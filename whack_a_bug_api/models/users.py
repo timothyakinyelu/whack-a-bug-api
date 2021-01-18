@@ -62,7 +62,7 @@ class User(db.Model, UserMixin):
     
     def __init__(self, *args, **kwargs):
         if not 'username' in kwargs:
-            self.username = kwargs['last_name'].lower() + kwargs['first_name'].lower()
+            self.username = kwargs['last_name'].lower() + '.' + kwargs['first_name'].lower()
         
         if not 'public_id' in kwargs:
             self.public_id = str(uuid.uuid4())
