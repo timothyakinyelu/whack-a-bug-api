@@ -93,3 +93,17 @@ class AuthenticationTests(BaseCase):
             
             self.assertEqual(login.status_code, 402)
             self.assertEqual(data['message'], 'email or password does not exist!')
+            
+    def test_email_is_valid_email_address(self):
+        self.new_user = {
+            'first_name': 'Juniper',
+            'last_name': 'Lee',
+            'email': 'lee.juniper',
+            'password': 'Jumper1'
+        }
+        
+        with self.client:
+            try:
+                register = self.client.post('/api/auth/register', data = json.dumps(self.new_user), content_type = 'application/json')
+            except AssertionError as e:
+                self.assertEqual(str(e), 'Provided entry is not an email address')
