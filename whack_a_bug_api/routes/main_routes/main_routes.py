@@ -4,6 +4,7 @@ from whack_a_bug_api.models.projects import Project
 from whack_a_bug_api.models.bugs import Bug
 from . import main
 from whack_a_bug_api.db import db
+from flask_login import login_required
 
 class ProjectsView(MethodView):
     """Class controlling all api routes for projects"""
@@ -25,6 +26,7 @@ class ProjectsView(MethodView):
         res = {'data': results}
         return make_response(jsonify(res), 200)
     
+    @login_required
     def post(self):
         form_data = request.get_json()
         title = form_data.get('title')
