@@ -148,7 +148,7 @@ class User(db.Model, UserMixin):
         """
         access_key = current_app.config.get('SECRET_KEY')
         try:
-            payload = jwt.decode(token, access_key)
+            payload = jwt.decode(token, access_key, algorithms=["HS256"], options={"require": ["exp"]})
             return payload['sub']
         except jwt.ExpiredSignatureError:
             return 'Token Signature has expired, please log in again.'
