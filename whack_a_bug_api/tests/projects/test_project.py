@@ -2,6 +2,8 @@ from flask import json
 from whack_a_bug_api.tests.baseCase import BaseCase
 from whack_a_bug_api.models.projects import Project
 from whack_a_bug_api.models.users import User
+from whack_a_bug_api.db import db
+from whack_a_bug_api.models.pivots import project_user_table
 
 
 class ProjectTests(BaseCase):
@@ -134,3 +136,66 @@ class ProjectTests(BaseCase):
         
             self.assertTrue(data['message'] == 'Project already exists!')
             self.assertEqual(resp.status_code, 409)
+            
+    def test_users_can_be_assigned_to_project(self):
+        self.register_user()
+        user1 = User(
+            first_name = 'Jane',
+            last_name = 'Fonda',
+            email = 'fonda.jane@example.com',
+            password = 'Rocky12'
+        )
+        user2 = User(
+            first_name = 'Luke',
+            last_name = 'Skywalker',
+            email = 'skywalker.luke@example.com',
+            password = 'Darthfather1'
+        )
+        user3 = User(
+            first_name = 'Michelle',
+            last_name = 'Pfieffer',
+            email = 'pfieffer.michelle@example.com',
+            password = 'Hot100x'
+        )
+        user4 = User(
+            first_name = 'Kwaghbee',
+            last_name = 'Rissa',
+            email = 'rissa.kwaghbee@example.com',
+            password = 'Brokenheart1'
+        )
+        user5 = User(
+            first_name = 'Naruto',
+            last_name = 'Uzumaki',
+            email = 'uzumaki.naruto@example.com',
+            password = 'Rasengan1'
+        )
+        db.session.add(user1)
+        db.session.add(user2)
+        db.session.add(user3)
+        db.session.add(user4)
+        db.session.add(user5)
+        db.session.commit()
+        
+        with self.client:
+            login = self.login_user()
+            login_data = json.loads(login.data.decode())
+            
+            headers = headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer {}'.format(login_data['access_token'])
+            }
+            
+            resp = self.client.post('/api/main/projects', data = json.dumps(dict(
+                title = 'Food Blog Design',
+                users = [1, 3 , 5]
+            )), headers = headers)
+            
+            data = json.loads(resp.data.decode())
+            self.assertTrue(data['status'] == 'success')
+            self.assertTrue(data['message'] == 'Project created successfully!')
+            self.assertEqual(resp.status_code, 201)
+            self.assertIn('Food Blog Design', data['data']['title'])
+            
+            link = db.session.query(project_user_table).all()
+            self.assertEqual(link[1].user_id, user2.id)
+            
