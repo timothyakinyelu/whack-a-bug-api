@@ -35,7 +35,8 @@ class Project(db.Model):
     bugs = db.relationship(
         'Bug',
         backref = 'project',
-        lazy = 'joined'
+        lazy = 'joined',
+        cascade = 'all, delete-orphan'
     )
     
     def save(self):
