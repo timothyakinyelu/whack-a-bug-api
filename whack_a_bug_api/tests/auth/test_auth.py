@@ -121,24 +121,3 @@ class AuthenticationTests(BaseCase):
                 register = self.client.post('/api/auth/register', data = json.dumps(self.new_user), content_type = 'application/json')
             except AssertionError as e:
                 self.assertEqual(str(e), 'Provided entry is not an email address')
-                
-                
-    # def test_authenticated_user_can_create_project(self):
-    #     user = User(
-    #         first_name = 'Juniper',
-    #         last_name = 'Lee',
-    #         email = 'lee.juniper@example.com',
-    #         password = 'Jumper1'
-    #     )
-    #     db.session.add(user)
-    #     db.session.commit()
-        
-    #     self.user = {
-    #         'email': 'lee.juniper@example.com',
-    #         'password': 'Jumper1'
-    #     }
-        
-    #     with self.client:
-            
-        
-        
