@@ -1,6 +1,7 @@
 from flask import jsonify, request, abort, make_response
 from flask.views import MethodView
 from whack_a_bug_api.models.projects import Project
+from whack_a_bug_api.models.users import User
 from whack_a_bug_api.models.bugs import Bug
 from . import main
 from whack_a_bug_api.db import db
@@ -31,6 +32,7 @@ class ProjectsView(MethodView):
     def post(self):
         form_data = request.get_json()
         title = form_data.get('title')
+        ids = form_data.get('users')
         
         if title:
             existing_project = Project.query.filter_by(title = title).first()
@@ -38,6 +40,9 @@ class ProjectsView(MethodView):
             if existing_project is None:
                 try:
                     project = Project(title = title)
+                    if ids is not None:
+                        users = User.query.filter(User.id.in_(ids)).all()
+                        project.users.extend(users)
                     project.save()
                     
                     data = {}
