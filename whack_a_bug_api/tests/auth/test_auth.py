@@ -9,37 +9,21 @@ class AuthenticationTests(BaseCase):
     """Test all authentication routes"""
     
     def test_user_can_be_registered(self):
-        self.user = {
-            'first_name': 'Juniper',
-            'last_name': 'Lee',
-            'email': 'lee.juniper@example.com',
-            'password': 'Jumper1'
-        }
+        res = self.register_user()
+        data = json.loads(res.data.decode())
         
-        with self.client:
-            res = self.client.post('/api/auth/register', data = json.dumps(self.user), content_type = 'application/json')
-            data = json.loads(res.data.decode())
-            
-            self.assertEqual(res.status_code, 201)
-            self.assertEqual(data['message'], 'User registered successfully!')
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(data['message'], 'User registered successfully!')
             
     def test_user_already_exists(self):
-        self.user = {
-            'first_name': 'Juniper',
-            'last_name': 'Lee',
-            'email': 'lee.juniper@example.com',
-            'password': 'Jumper1'
-        }
+        res = self.register_user()
+        self.assertEqual(res.status_code, 201)
         
-        with self.client:
-            res = self.client.post('/api/auth/register', data = json.dumps(self.user), content_type = 'application/json')
-            self.assertEqual(res.status_code, 201)
-            
-            try:
-                resp = self.client.post('/api/auth/register', data = json.dumps(self.user), content_type = 'application/json')
-                data = json.loads(resp.data.decode())
-            except AssertionError as a:
-                self.assertEqual(str(a), 'This username already exists!')
+        try:
+            resp = self.register_user()
+            data = json.loads(resp.data.decode())
+        except AssertionError as a:
+            self.assertEqual(str(a), 'This username already exists!')
         
                 
     def test_token_can_be_generated(self):
@@ -72,22 +56,10 @@ class AuthenticationTests(BaseCase):
         self.assertTrue(User.decode_token(auth_token) == user.public_id)
             
     def test_user_can_login(self): 
-        self.new_user = {
-            'first_name': 'Juniper',
-            'last_name': 'Lee',
-            'email': 'lee.juniper@example.com',
-            'password': 'Jumper1'
-        }
-        
-        self.user = {
-            'email': 'lee.juniper@example.com',
-            'password': 'Jumper1'
-        }
-        
         with self.client:
-            register = self.client.post('/api/auth/register', data = json.dumps(self.new_user), content_type = 'application/json')
-            
-            login = self.client.post('/api/auth/login', data = json.dumps(self.user), content_type = 'application/json')
+            self.register_user()
+            login = self.login_user()
+
             data = json.loads(login.data.decode())
             
             self.assertEqual(login.status_code, 200)
@@ -96,13 +68,8 @@ class AuthenticationTests(BaseCase):
             self.assertTrue(current_user.first_name == 'Juniper')
             
     def test_unregistered_user_cannot_login(self):
-        self.user = {
-            'email': 'lee.juniper@example.com',
-            'password': 'Jumper1'
-        }
-        
         with self.client:
-            login = self.client.post('/api/auth/login', data = json.dumps(self.user), content_type = 'application/json')
+            login = self.login_user()
             data = json.loads(login.data.decode())
             
             self.assertEqual(login.status_code, 402)

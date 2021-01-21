@@ -7,34 +7,17 @@ from whack_a_bug_api.models.users import User
 class ProjectTests(BaseCase):
     
     def test_authenticated_user_can_create_project(self):
-        self.new_user = {
-            'first_name': 'Juniper',
-            'last_name': 'Lee',
-            'email': 'lee.juniper@example.com',
-            'password': 'Jumper1'
-        }
-        
-        self.user = {
-            'email': 'lee.juniper@example.com',
-            'password': 'Jumper1'
-        }
-        
-        self.project = {'title': 'Food Blog Design'}
+        self.register_user()
         
         with self.client:
-            register = self.client.post('/api/auth/register', data = json.dumps(self.new_user), content_type = 'application/json')
-            
-            user = User.query.all()
-            print(user[0].public_id)
-            
-            login = self.client.post('/api/auth/login', data = json.dumps(self.user), content_type = 'application/json')
+            login = self.login_user()
             data = json.loads(login.data.decode())
             
             headers = {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer {}'.format(data['access_token'])
             }
-            project = self.client.post('/api/main/projects', data = json.dumps(self.project), headers = headers)
+            project = self.create_project(headers)
             data = json.loads(project.data.decode())
 
             self.assertTrue(data['status'] == 'success')
@@ -43,13 +26,21 @@ class ProjectTests(BaseCase):
             self.assertIn('Food Blog', data['data']['title'])
             
     def test_api_gets_all_projects(self):
-        self.project = {'title': 'Food Blog Design'}
+        self.register_user()
         
         with self.client:
-            res = self.client.post('/api/main/projects', data = json.dumps(self.project), content_type = 'application/json')
+            login = self.login_user()
+            data = json.loads(login.data.decode())
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer {}'.format(data['access_token'])
+            }
+            
+            res = self.create_project(headers)
             self.assertEqual(res.status_code, 201)
             
-            resp = self.client.get('/api/main/projects')
+            resp = self.client.get('/api/main/projects', headers = headers)
             data = json.loads(resp.data.decode())
             
             self.assertEqual(resp.status_code, 200)
@@ -57,35 +48,47 @@ class ProjectTests(BaseCase):
             
             
     def test_project_can_be_updated(self):
-        existing_project1 = Project(title = 'Food Blog Design')
-        existing_project2 = Project(title = 'Ticketing System')
-        existing_project1.save()
-        existing_project2.save()
-        
-        self.project = {'title': 'Fashion Blog Design'}
-        
+        self.register_user()
         
         with self.client:
-            res = self.client.put('/api/main/projects/project/1', data = json.dumps(self.project), content_type = 'application/json')
-            data = json.loads(res.data.decode())
+            login = self.login_user()
+            data = json.loads(login.data.decode())
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer {}'.format(data['access_token'])
+            }
+            self.create_project(headers)
+            
+            update_project = {'title': 'Fashion Blog Design'}
+            res = self.client.put('/api/main/projects/project/1', data = json.dumps(update_project), headers = headers)
+            result = json.loads(res.data.decode())
             
             self.assertEqual(res.status_code, 200)
-            self.assertIn('Fashion', data['data']['title'])
+            self.assertIn('Fashion', result['data']['title'])
     
     
     def test_api_can_get_project_by_id(self):
-        existing_project1 = Project(title = 'Food Blog Design')
-        existing_project2 = Project(title = 'Ticketing System')
-        existing_project1.save()
-        existing_project2.save()
+        self.register_user()
         
         with self.client:
-            res = self.client.get('/api/main/projects/project/2')
+            login = self.login_user()
+            data = json.loads(login.data.decode())
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer {}'.format(data['access_token'])
+            }
+            self.create_project(headers)
+            
+            res = self.client.get('/api/main/projects/project/1', headers = headers)
             self.assertEqual(res.status_code, 200)
-            self.assertIn('Ticketing', str(res.data))
+            self.assertIn('Food Blog', str(res.data))
             
             
     def test_api_can_delete_projects(self):
+        self.register_user()
+        
         existing_project1 = Project(title = 'Food Blog Design')
         existing_project2 = Project(title = 'Ticketing System')
         existing_project3 = Project(title = 'Mobile app development')
@@ -94,25 +97,39 @@ class ProjectTests(BaseCase):
         existing_project3.save()
         
         with self.client:
-            res = self.client.delete('/api/main/projects', data = json.dumps(dict(selectedIDs = [2])), content_type = 'application/json')
+            login = self.login_user()
+            data = json.loads(login.data.decode())
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer {}'.format(data['access_token'])
+            }
+            
+            res = self.client.delete('/api/main/projects', data = json.dumps(dict(selectedIDs = [2])), headers = headers)
             data = json.loads(res.data.decode())
             
             self.assertEqual(res.status_code, 200)
             self.assertTrue(data['message'] == 'Project(s) deleted Successfully!')
             
             #check if project still exists
-            resp = self.client.get('/api/main/projects/project/2')
+            resp = self.client.get('/api/main/projects/project/2', headers = headers)
             self.assertEqual(resp.status_code, 404)
             
     def test_project_already_exists(self):
-        existing_project = Project(title = 'Food Blog Design')
-        existing_project.save()
-        
-        self.project = {'title': 'Food Blog Design'}
+        self.register_user()
         
         with self.client:
-            res = self.client.post('/api/main/projects', data = json.dumps(self.project), content_type = 'application/json')
-            data = json.loads(res.data.decode())
+            login = self.login_user()
+            data = json.loads(login.data.decode())
             
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer {}'.format(data['access_token'])
+            }
+            
+            res = self.create_project(headers)
+            resp = self.create_project(headers)
+            data = json.loads(resp.data.decode())
+        
             self.assertTrue(data['message'] == 'Project already exists!')
-            self.assertEqual(res.status_code, 409)
+            self.assertEqual(resp.status_code, 409)
