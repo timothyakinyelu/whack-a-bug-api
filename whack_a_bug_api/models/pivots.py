@@ -7,7 +7,7 @@ project_user_table = db.Table('project_user', db.Model.metadata,
         db.ForeignKey('projects.id')
     ),   
     db.Column(
-        'users.id',
+        'user_id',
         db.Integer,
         db.ForeignKey('users.id')
     )                           
