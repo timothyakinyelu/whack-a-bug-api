@@ -23,18 +23,21 @@ def createApp():
     
     @login_manager.request_loader
     def load_user_from_request(request):
-        auth_headers = request.headers.get('Authorization', '')
+        auth_headers = request.headers.get('Authorization', '').split()
         
         if len(auth_headers) != 2:
             return None
         
         try:
             token = auth_headers[1]
+    
             data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'], options={"require": ["exp"]})
-            user = User.query.filter_by(public_id = data['sub'])
+            User = users.User
+            user = User.query.filter_by(public_id = data['sub']).first()
             
             if not user:
                 return 'User not found!'
+            return user
         except jwt.ExpiredSignatureError:
             return 'Token Signature has expired, please log in again.'
         except jwt.InvalidSignatureError:
