@@ -2,6 +2,7 @@ from whack_a_bug_api.tests.baseCase import BaseCase
 from flask import json
 from whack_a_bug_api.models.users import User
 from whack_a_bug_api.db import db
+from flask_login import current_user
 
 
 class AuthenticationTests(BaseCase):
@@ -92,6 +93,7 @@ class AuthenticationTests(BaseCase):
             self.assertEqual(login.status_code, 200)
             self.assertEqual(data['message'], 'Login Successful!')
             self.assertTrue(data['access_token'])
+            self.assertTrue(current_user.first_name == 'Juniper')
             
     def test_unregistered_user_cannot_login(self):
         self.user = {
@@ -119,3 +121,24 @@ class AuthenticationTests(BaseCase):
                 register = self.client.post('/api/auth/register', data = json.dumps(self.new_user), content_type = 'application/json')
             except AssertionError as e:
                 self.assertEqual(str(e), 'Provided entry is not an email address')
+                
+                
+    # def test_authenticated_user_can_create_project(self):
+    #     user = User(
+    #         first_name = 'Juniper',
+    #         last_name = 'Lee',
+    #         email = 'lee.juniper@example.com',
+    #         password = 'Jumper1'
+    #     )
+    #     db.session.add(user)
+    #     db.session.commit()
+        
+    #     self.user = {
+    #         'email': 'lee.juniper@example.com',
+    #         'password': 'Jumper1'
+    #     }
+        
+    #     with self.client:
+            
+        
+        
