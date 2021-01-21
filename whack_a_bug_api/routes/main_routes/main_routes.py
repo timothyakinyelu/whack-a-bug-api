@@ -123,6 +123,8 @@ class SingleProjectView(MethodView):
 class BugsView(MethodView):
     """Class controlling all api routes for bugs"""
     
+    decorators = [login_required]
+    
     def get(self):
         bugs = Bug.get_all()
         results = []
@@ -178,6 +180,8 @@ class BugsView(MethodView):
             
 class SingleBugView(MethodView):
     """Class controlling routes for editing and updating bug issues"""
+    
+    decorators = [login_required]
     
     def get(self, id):
         bug = Bug.query.filter_by(id = id).first()
