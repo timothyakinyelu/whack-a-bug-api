@@ -3,6 +3,7 @@ from flask.views import MethodView
 from whack_a_bug_api.db import db
 from flask import jsonify, make_response, request, abort
 from whack_a_bug_api.models.users import User
+from flask_login import login_user
 
 class RegisterView(MethodView):
     """Class controlling api route for registering a new user"""
@@ -51,6 +52,7 @@ class LoginView(MethodView):
                         'access_token': access_token
                     }
                     
+                    login_user(user)
                     return make_response(jsonify(res), 200)
             else:
                 #user does not exist
