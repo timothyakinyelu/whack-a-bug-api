@@ -1,20 +1,45 @@
 from flask import json
 from whack_a_bug_api.tests.baseCase import BaseCase
 from whack_a_bug_api.models.projects import Project
+from whack_a_bug_api.models.users import User
 
 
 class ProjectTests(BaseCase):
-    def test_projects_can_be_created(self):
+    
+    def test_authenticated_user_can_create_project(self):
+        self.new_user = {
+            'first_name': 'Juniper',
+            'last_name': 'Lee',
+            'email': 'lee.juniper@example.com',
+            'password': 'Jumper1'
+        }
+        
+        self.user = {
+            'email': 'lee.juniper@example.com',
+            'password': 'Jumper1'
+        }
+        
         self.project = {'title': 'Food Blog Design'}
         
         with self.client:
-            res = self.client.post('/api/main/projects', data = json.dumps(self.project), content_type = 'application/json')
+            register = self.client.post('/api/auth/register', data = json.dumps(self.new_user), content_type = 'application/json')
             
-            data = json.loads(res.data.decode())
+            user = User.query.all()
+            print(user[0].public_id)
             
+            login = self.client.post('/api/auth/login', data = json.dumps(self.user), content_type = 'application/json')
+            data = json.loads(login.data.decode())
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer {}'.format(data['access_token'])
+            }
+            project = self.client.post('/api/main/projects', data = json.dumps(self.project), headers = headers)
+            data = json.loads(project.data.decode())
+
             self.assertTrue(data['status'] == 'success')
             self.assertTrue(data['message'] == 'Project created successfully!')
-            self.assertEqual(res.status_code, 201)
+            self.assertEqual(project.status_code, 201)
             self.assertIn('Food Blog', data['data']['title'])
             
     def test_api_gets_all_projects(self):
