@@ -36,11 +36,10 @@ class Bug(db.Model):
     )
     bug_status = db.Column(
         db.String(30),
-        server_default = 'NEW'
+        server_default = 'Pending'
     )
-    bug_track_status = db.Column(
+    test_status = db.Column(
         db.String(30),
-        server_default = 'Ongoing'
     )
     ticket_ref = db.Column(
         db.String(255),
