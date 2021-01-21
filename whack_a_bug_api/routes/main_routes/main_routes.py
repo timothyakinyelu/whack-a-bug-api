@@ -9,6 +9,8 @@ from flask_login import login_required
 class ProjectsView(MethodView):
     """Class controlling all api routes for projects"""
     
+    decorators = [login_required]
+    
     def get(self):
         projects = Project.get_all()
         results = []
@@ -26,7 +28,6 @@ class ProjectsView(MethodView):
         res = {'data': results}
         return make_response(jsonify(res), 200)
     
-    @login_required
     def post(self):
         form_data = request.get_json()
         title = form_data.get('title')
@@ -70,6 +71,8 @@ class ProjectsView(MethodView):
 
 class SingleProjectView(MethodView):
     """Class controlling routes for editing and updating projects"""
+    
+    decorators = [login_required]
     
     def get(self, id):
         project = Project.query.filter_by(id = id).first()
