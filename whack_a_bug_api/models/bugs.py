@@ -39,7 +39,7 @@ class Bug(db.Model):
         server_default = 'Pending'
     )
     test_status = db.Column(
-        db.String(30),
+        db.String(30)
     )
     ticket_ref = db.Column(
         db.String(255),
@@ -86,8 +86,8 @@ class Bug(db.Model):
             if not isinstance(obj, Bug):
                 continue
                 
-            if obj.bug_track_status == 'Completed':
-                if self.bug_track_status == obj.bug_track_status:
+            if obj.test_status == 'Passed':
+                if self.test_status == obj.test_status:
                     continue
                     
                 self.closed_on = db.func.current_timestamp()
