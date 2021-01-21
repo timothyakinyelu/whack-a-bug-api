@@ -57,6 +57,18 @@ class AuthenticationTests(BaseCase):
         except Exception as exe:
             print(exe)
             
+    def test_token_can_be_decoded(self):
+        user = User(
+            first_name = 'Juniper',
+            last_name = 'Lee',
+            email = 'lee.juniper@example.com',
+            password = 'Jumper1'
+        )
+        db.session.add(user)
+        db.session.commit()
+        
+        auth_token = user.generate_token(user.public_id)
+        self.assertTrue(User.decode_token(auth_token) == user.public_id)
             
     def test_user_can_login(self): 
         self.new_user = {
