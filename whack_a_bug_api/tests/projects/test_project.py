@@ -5,6 +5,7 @@ from whack_a_bug_api.models.users import User
 
 
 class ProjectTests(BaseCase):
+    """Project test units"""
     
     def test_authenticated_user_can_create_project(self):
         self.register_user()
