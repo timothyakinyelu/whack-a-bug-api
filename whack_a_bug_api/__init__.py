@@ -1,7 +1,8 @@
-from flask import Flask
+from flask import Flask, request, current_app
 from whack_a_bug_api.helpers.load_config import loadConfig
 from flask_login import LoginManager
 from flask_migrate import Migrate
+import jwt
 
 login_manager = LoginManager()
 migrate = Migrate()
@@ -19,6 +20,26 @@ def createApp():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    
+    @login_manager.request_loader
+    def load_user_from_request(request):
+        auth_headers = request.headers.get('Authorization', '')
+        
+        if len(auth_headers) != 2:
+            return None
+        
+        try:
+            token = auth_headers[1]
+            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'], options={"require": ["exp"]})
+            user = User.query.filter_by(public_id = data['sub'])
+            
+            if not user:
+                return 'User not found!'
+        except jwt.ExpiredSignatureError:
+            return 'Token Signature has expired, please log in again.'
+        except jwt.InvalidSignatureError:
+            return 'Invalid token, please log in again.'
+            
     
     with app.app_context():
         #add route blueprints
