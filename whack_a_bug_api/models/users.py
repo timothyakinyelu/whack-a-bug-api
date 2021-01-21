@@ -4,6 +4,7 @@ from whack_a_bug_api.db import db
 from sqlalchemy.orm import validates
 from flask_login import UserMixin
 from datetime import datetime, timedelta
+from .pivots import project_user_table
 import re
 import jwt
 import uuid
@@ -55,7 +56,8 @@ class User(db.Model, UserMixin):
     )
     projects = db.relationship(
         'Project',
-        backref = 'user',
+        secondary = project_user_table,
+        backref = 'users',
         lazy = 'joined'
     )
     
