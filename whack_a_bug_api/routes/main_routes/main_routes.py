@@ -72,7 +72,7 @@ class ProjectsView(MethodView):
         ids = request.json['selectedIDs']
         data = Project.delete(ids)
         
-        return make_response(jsonify(data), 200)
+        return make_response(jsonify(data), 202)
 
 class SingleProjectView(MethodView):
     """Class controlling routes for editing and updating projects"""
@@ -199,9 +199,36 @@ class SingleBugView(MethodView):
         data['title'] = bug.title
         data['project_id'] = bug.project_id
         data['ticket_ref'] = bug.ticket_ref
+        data['assigned_to'] = bug.assigned_to
         
         res = {'data': data}
         return make_response(jsonify(res), 200)
+    
+    def put(self, id):
+        form_data = request.get_json()
+        userID = form_data.get('userID')
+        projectID = form_data.get('projectID')
+        
+        bug = Bug.query.filter_by(id = id).first()
+        
+        if bug is None:
+            abort(404)
+            
+        if bug.project_id == projectID:
+            link = db.session.query(Project).filter_by(id = projectID) \
+                .filter(Project.users.any(User.id == userID)).first()
+                
+            list_of_users = [obj.id for obj in link.users]
+            if userID in list_of_users:
+                bug.assigned_to = userID
+                bug.save()
+                
+                data = {}
+                data['assigned_to'] = bug.assigned_to
+                
+                res = {'data': data}
+                return make_response(jsonify(res), 200)
+            
         
 #define the API resources
 projects_view = ProjectsView.as_view('projects_api')
