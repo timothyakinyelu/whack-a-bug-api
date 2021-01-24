@@ -1,7 +1,9 @@
 from flask import json
 from whack_a_bug_api.tests.baseCase import BaseCase
 from whack_a_bug_api.models.projects import Project
+from whack_a_bug_api.models.users import User
 from whack_a_bug_api.models.bugs import Bug
+from whack_a_bug_api.db import db
 
 class BugTests(BaseCase):
     """Bug issue test units"""
@@ -81,3 +83,65 @@ class BugTests(BaseCase):
             
             self.assertEqual('Unable to login', data['data']['title'])
             self.assertEqual(res.status_code, 200)
+            
+    def test_issue_can_be_assigned_to_user(self):
+        self.register_user()
+        
+        user1 = User(
+            first_name = 'Jane',
+            last_name = 'Fonda',
+            email = 'fonda.jane@example.com',
+            password = 'Rocky12'
+        )
+        user2 = User(
+            first_name = 'Luke',
+            last_name = 'Skywalker',
+            email = 'skywalker.luke@example.com',
+            password = 'Darthfather1'
+        )
+        user3 = User(
+            first_name = 'Naruto',
+            last_name = 'Uzumaki',
+            email = 'uzumaki.naruto@example.com',
+            password = 'Rasengan1'
+        )
+        db.session.add(user1)
+        db.session.add(user2)
+        db.session.add(user3)
+        db.session.commit()
+        
+        with self.client:
+            login = self.login_user()
+            login_data = json.loads(login.data.decode())
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer {}'.format(login_data['access_token'])
+            }
+            
+            self.client.post('/api/main/projects', data = json.dumps(dict(
+                title = 'Food Blog Design',
+                users = [2, 3]
+            )), headers = headers)
+            
+            self.client.post('/api/main/projects', data = json.dumps(dict(
+                title = 'Fashion Blog Design',
+                users = [3]
+            )), headers = headers)
+            self.create_bug(headers)
+            
+            resp = self.client.put('/api/main/bugs/1', data = json.dumps(dict(
+                userID = 2,
+                projectID = 1
+            )), headers = headers)
+            data = json.loads(resp.data.decode())
+            
+            self.assertEqual(resp.status_code, 200)
+            
+            res = self.client.get('/api/main/bugs/1', headers = headers)
+            data = json.loads(res.data.decode())
+            
+            self.assertEqual('Unable to login', data['data']['title'])
+            self.assertTrue(data['data']['assigned_to'] == 2)
+            
+            
