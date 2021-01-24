@@ -200,6 +200,8 @@ class SingleBugView(MethodView):
         data['project_id'] = bug.project_id
         data['ticket_ref'] = bug.ticket_ref
         data['assigned_to'] = bug.assigned_to
+        data['bug_status'] = bug.bug_status
+        data['test_status'] = bug.test_status
         
         res = {'data': data}
         return make_response(jsonify(res), 200)
@@ -208,6 +210,8 @@ class SingleBugView(MethodView):
         form_data = request.get_json()
         userID = form_data.get('userID')
         projectID = form_data.get('projectID')
+        bugStatus = form_data.get('bugStatus')
+        testStatus = form_data.get('testStatus')
         
         bug = Bug.query.filter_by(id = id).first()
         
@@ -215,19 +219,22 @@ class SingleBugView(MethodView):
             abort(404)
         else:    
             if bug.project_id == projectID:
-                link = db.session.query(Project).filter_by(id = projectID) \
-                    .filter(Project.users.any(User.id == userID)).first()
+                bug.bug_status = bugStatus
+                bug.test_status = testStatus
+                
+                if userID:
+                    link = db.session.query(Project).filter_by(id = projectID) \
+                        .filter(Project.users.any(User.id == userID)).first()
+                        
+                    list_of_users = [obj.id for obj in link.users]
                     
-                list_of_users = [obj.id for obj in link.users]
-                if userID in list_of_users:
-                    bug.assigned_to = userID
-                    bug.save()
-                    
-                    data = {}
-                    data['assigned_to'] = bug.assigned_to
-                    
-                    res = {'data': data}
-                    return make_response(jsonify(res), 200)
+                    if userID in list_of_users:
+                        bug.assigned_to = userID
+                
+                bug.save()
+                
+                res = {'message': 'Bug issue updated successfully!'}
+                return make_response(jsonify(res), 200)
             
         
 #define the API resources
