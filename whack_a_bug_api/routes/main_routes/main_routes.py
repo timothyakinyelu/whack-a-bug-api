@@ -213,21 +213,21 @@ class SingleBugView(MethodView):
         
         if bug is None:
             abort(404)
-            
-        if bug.project_id == projectID:
-            link = db.session.query(Project).filter_by(id = projectID) \
-                .filter(Project.users.any(User.id == userID)).first()
-                
-            list_of_users = [obj.id for obj in link.users]
-            if userID in list_of_users:
-                bug.assigned_to = userID
-                bug.save()
-                
-                data = {}
-                data['assigned_to'] = bug.assigned_to
-                
-                res = {'data': data}
-                return make_response(jsonify(res), 200)
+        else:    
+            if bug.project_id == projectID:
+                link = db.session.query(Project).filter_by(id = projectID) \
+                    .filter(Project.users.any(User.id == userID)).first()
+                    
+                list_of_users = [obj.id for obj in link.users]
+                if userID in list_of_users:
+                    bug.assigned_to = userID
+                    bug.save()
+                    
+                    data = {}
+                    data['assigned_to'] = bug.assigned_to
+                    
+                    res = {'data': data}
+                    return make_response(jsonify(res), 200)
             
         
 #define the API resources
