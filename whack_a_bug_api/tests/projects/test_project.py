@@ -111,7 +111,7 @@ class ProjectTests(BaseCase):
             res = self.client.delete('/api/main/projects', data = json.dumps(dict(selectedIDs = [2])), headers = headers)
             data = json.loads(res.data.decode())
             
-            self.assertEqual(res.status_code, 200)
+            self.assertEqual(res.status_code, 202)
             self.assertTrue(data['message'] == 'Project(s) deleted Successfully!')
             
             #check if project still exists
