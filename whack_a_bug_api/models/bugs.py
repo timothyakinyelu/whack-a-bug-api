@@ -32,11 +32,11 @@ class Bug(db.Model):
     )
     severity = db.Column(
         db.String(30),
-        server_default = 'LOW'
+        default = 'LOW'
     )
     bug_status = db.Column(
         db.String(30),
-        server_default = 'Pending'
+        default = 'Pending'
     )
     test_status = db.Column(
         db.String(30)
@@ -93,6 +93,18 @@ class Bug(db.Model):
                 self.closed_on = db.func.current_timestamp()
     
     
+    @event.listens_for(db.session, 'before_commit')
+    def set_test_status_pending(session):
+        for obj in session.dirty:
+            if not isinstance(obj, Bug):
+                continue
+            else:
+                if obj.bug_status == 'Awaiting Test':
+                    bug = Bug.query.filter_by(id = obj.id).first()
+                    bug.test_status = 'Pending'
+                    db.session.add(bug)
+                    
+                        
     def __repr__(self):
         return "<Bug: {}>".format(self.title)
                 
