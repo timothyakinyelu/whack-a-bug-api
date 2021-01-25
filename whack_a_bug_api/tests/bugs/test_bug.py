@@ -202,3 +202,33 @@ class BugTests(BaseCase):
             self.assertEqual('Unable to login', data['data']['title'])
             self.assertTrue(data['data']['bug_status'] == 'Awaiting Test')
             self.assertTrue(data['data']['test_status'] == 'Pending')
+            
+    def test_if_bug_issue_can_be_closed(self):
+        self.register_user()
+            
+        with self.client:
+            login = self.login_user()   
+            login_data = json.loads(login.data.decode())
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer {}'.format(login_data['access_token'])
+            }
+            
+            self.create_project(headers)
+            self.create_bug(headers)
+            resp = self.client.put('/api/main/bugs/1', data = json.dumps(dict(
+                testStatus = 'Passed',
+                projectID = 1
+            )), headers = headers)
+            data = json.loads(resp.data.decode())
+            
+            self.assertEqual(resp.status_code, 200)
+            self.assertTrue(data['message'] == 'Bug issue updated successfully!')
+            
+            res = self.client.get('/api/main/bugs/1', headers = headers)
+            getData = json.loads(res.data.decode())
+            
+            self.assertEqual('Unable to login', getData['data']['title'])
+            self.assertTrue(getData['data']['test_status'] == 'Passed')
+            self.assertFalse(getData['data']['closed_on'] == None)
