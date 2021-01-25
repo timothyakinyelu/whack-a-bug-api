@@ -2,6 +2,7 @@ from flask import Flask, request, current_app
 from whack_a_bug_api.helpers.load_config import loadConfig
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from flask_sqlalchemy import event
 import jwt
 
 login_manager = LoginManager()
@@ -15,7 +16,14 @@ def createApp():
     app.config.from_object(Config)
     
     from whack_a_bug_api.db import db
-    from whack_a_bug_api.models import bugs, projects, users, pivots
+    from whack_a_bug_api.models import bugs, projects, users, pivots, roles
+    
+    @event.listens_for(roles.Role.__table__, 'after_create')
+    def insert_initial_values(*args, **kwargs):
+        db.session.add(Role(name = 'developer'))
+        db.session.add(Role(name = 'tester'))
+        db.session.add(Role(name = 'lead'))
+        db.session.commit()
     
     db.init_app(app)
     migrate.init_app(app, db)
