@@ -45,9 +45,10 @@ class User(db.Model, UserMixin):
         db.String(50),
         nullable = False
     )
-    is_admin = db.Column(
-        db.Boolean,
-        server_default = "0"
+    role_id = db.Column(
+        db.Integer,
+        db.ForeignKey('roles.id'),
+        server_default = "1"
     )
     assigned_issues = db.relationship(
         'Bug',
