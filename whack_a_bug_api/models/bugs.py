@@ -60,7 +60,7 @@ class Bug(db.Model):
     )
     created_on = db.Column(
         db.DateTime,
-        default = db.func.current_timestamp()
+        server_default = db.func.current_timestamp()
     )
     closed_on = db.Column(
         db.DateTime
@@ -79,18 +79,15 @@ class Bug(db.Model):
         
         return Bug.query.all()
     
-    @event.listens_for(db.session, 'before_flush')
-    def set_closed_on(*args):
-        sess = args[0]
-        for obj in sess.new:
+    @event.listens_for(db.session, 'before_commit')
+    def set_closed_on(session):
+        for obj in session.dirty:
             if not isinstance(obj, Bug):
-                continue
-                
-            if obj.test_status == 'Passed':
-                if self.test_status == obj.test_status:
-                    continue
-                    
-                self.closed_on = db.func.current_timestamp()
+                continue    
+            elif obj.test_status == 'Passed':
+                bug = Bug.query.filter_by(id = obj.id).first()
+                bug.closed_on = db.func.current_timestamp()
+                db.session.add(bug)
     
     
     @event.listens_for(db.session, 'before_commit')
