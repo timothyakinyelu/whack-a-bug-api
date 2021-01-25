@@ -211,7 +211,6 @@ class SingleBugView(MethodView):
         userID = form_data.get('userID')
         projectID = form_data.get('projectID')
         bugStatus = form_data.get('bugStatus')
-        testStatus = form_data.get('testStatus')
         
         bug = Bug.query.filter_by(id = id).first()
         
@@ -220,7 +219,6 @@ class SingleBugView(MethodView):
         else:    
             if bug.project_id == projectID:
                 bug.bug_status = bugStatus
-                bug.test_status = testStatus
                 
                 if userID:
                     link = db.session.query(Project).filter_by(id = projectID) \
