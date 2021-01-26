@@ -69,11 +69,33 @@ class BaseCase(TestCase):
         response = self.client.post('/api/auth/register', data = json.dumps(self.user), content_type = 'application/json')
         return response
     
-    def login_user(self):
+    def login_lead(self):
         """login a test case user"""
         
         self.user = {
             'email': 'lee.juniper@example.com',
+            'password': 'Jumper1'
+        }
+        
+        response = self.client.post('/api/auth/login', data = json.dumps(self.user), content_type = 'application/json')
+        return response
+    
+    def login_developer(self):
+        """login a test case user"""
+        
+        self.user = {
+            'email': 'hammond.chuck@example.com',
+            'password': 'Jumper1'
+        }
+        
+        response = self.client.post('/api/auth/login', data = json.dumps(self.user), content_type = 'application/json')
+        return response
+    
+    def login_tester(self):
+        """login a test case user"""
+        
+        self.user = {
+            'email': 'lee.jennifer@example.com',
             'password': 'Jumper1'
         }
         
