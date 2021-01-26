@@ -9,11 +9,11 @@ from whack_a_bug_api.models.pivots import project_user_table
 class ProjectTests(BaseCase):
     """Project test units"""
     
-    def test_authenticated_user_can_create_project(self):
-        self.register_user()
+    def test_lead_role_user_can_create_project(self):
+        self.register_lead()
         
         with self.client:
-            login = self.login_user()
+            login = self.login_lead()
             data = json.loads(login.data.decode())
             
             headers = {
@@ -27,12 +27,29 @@ class ProjectTests(BaseCase):
             self.assertTrue(data['message'] == 'Project created successfully!')
             self.assertEqual(project.status_code, 201)
             self.assertIn('Food Blog', data['data']['title'])
-            
-    def test_api_gets_all_projects(self):
-        self.register_user()
+
+    def test_other_roles_cannot_create_project(self):
+        self.register_tester()
         
         with self.client:
-            login = self.login_user()
+            login = self.login_tester()
+            data = json.loads(login.data.decode())
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer {}'.format(data['access_token'])
+            }
+            project = self.create_project(headers)
+            data = json.loads(project.data.decode())
+
+            self.assertTrue(data['message'] == 'You do not have access to this action!')
+            self.assertEqual(project.status_code, 403)
+            
+    def test_api_gets_all_projects(self):
+        self.register_lead()
+        
+        with self.client:
+            login = self.login_lead()
             data = json.loads(login.data.decode())
             
             headers = {
@@ -51,10 +68,10 @@ class ProjectTests(BaseCase):
             
             
     def test_project_can_be_updated(self):
-        self.register_user()
+        self.register_lead()
         
         with self.client:
-            login = self.login_user()
+            login = self.login_lead()
             data = json.loads(login.data.decode())
             
             headers = {
@@ -72,10 +89,10 @@ class ProjectTests(BaseCase):
     
     
     def test_api_can_get_project_by_id(self):
-        self.register_user()
+        self.register_lead()
         
         with self.client:
-            login = self.login_user()
+            login = self.login_lead()
             data = json.loads(login.data.decode())
             
             headers = {
@@ -90,7 +107,7 @@ class ProjectTests(BaseCase):
             
             
     def test_api_can_delete_projects(self):
-        self.register_user()
+        self.register_lead()
         
         existing_project1 = Project(title = 'Food Blog Design')
         existing_project2 = Project(title = 'Ticketing System')
@@ -100,7 +117,7 @@ class ProjectTests(BaseCase):
         existing_project3.save()
         
         with self.client:
-            login = self.login_user()
+            login = self.login_lead()
             data = json.loads(login.data.decode())
             
             headers = {
@@ -119,10 +136,10 @@ class ProjectTests(BaseCase):
             self.assertEqual(resp.status_code, 404)
             
     def test_project_already_exists(self):
-        self.register_user()
+        self.register_lead()
         
         with self.client:
-            login = self.login_user()
+            login = self.login_lead()
             data = json.loads(login.data.decode())
             
             headers = {
@@ -137,8 +154,8 @@ class ProjectTests(BaseCase):
             self.assertTrue(data['message'] == 'Project already exists!')
             self.assertEqual(resp.status_code, 409)
             
-    def test_users_can_be_assigned_to_project(self):
-        self.register_user()
+    def test_lead_can_assign_users_to_project(self):
+        self.register_lead()
         user1 = User(
             first_name = 'Jane',
             last_name = 'Fonda',
@@ -177,7 +194,7 @@ class ProjectTests(BaseCase):
         db.session.commit()
         
         with self.client:
-            login = self.login_user()
+            login = self.login_lead()
             login_data = json.loads(login.data.decode())
             
             headers = headers = {
