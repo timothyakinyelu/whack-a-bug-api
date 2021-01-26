@@ -58,7 +58,7 @@ class AuthenticationTests(BaseCase):
     def test_user_can_login(self): 
         with self.client:
             self.register_lead()
-            login = self.login_user()
+            login = self.login_lead()
 
             data = json.loads(login.data.decode())
             
@@ -69,7 +69,7 @@ class AuthenticationTests(BaseCase):
             
     def test_unregistered_user_cannot_login(self):
         with self.client:
-            login = self.login_user()
+            login = self.login_lead()
             data = json.loads(login.data.decode())
             
             self.assertEqual(login.status_code, 402)
