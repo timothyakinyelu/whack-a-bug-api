@@ -5,6 +5,7 @@ from sqlalchemy.orm import validates
 from flask_login import UserMixin
 from datetime import datetime, timedelta
 from .pivots import project_user_table
+from whack_a_bug_api.models.roles import Role
 import re
 import jwt
 import uuid
@@ -155,3 +156,12 @@ class User(db.Model, UserMixin):
             return 'Token Signature has expired, please log in again.'
         except jwt.InvalidSignatureError:
             return 'Invalid token, please log in again.'
+        
+        
+    def hasRole(self, role):
+        """check if user has required role"""
+        
+        req_role = Role.query.filter_by(name = role).first()
+        if self.role_id == req_role.id:
+            return True
+        return False
