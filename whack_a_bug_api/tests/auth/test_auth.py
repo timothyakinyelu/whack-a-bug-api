@@ -9,18 +9,18 @@ class AuthenticationTests(BaseCase):
     """Test all authentication routes"""
     
     def test_user_can_be_registered(self):
-        res = self.register_user()
+        res = self.register_lead()
         data = json.loads(res.data.decode())
         
         self.assertEqual(res.status_code, 201)
         self.assertEqual(data['message'], 'User registered successfully!')
             
     def test_user_already_exists(self):
-        res = self.register_user()
+        res = self.register_lead()
         self.assertEqual(res.status_code, 201)
         
         try:
-            resp = self.register_user()
+            resp = self.register_lead()
             data = json.loads(resp.data.decode())
         except AssertionError as a:
             self.assertEqual(str(a), 'This username already exists!')
@@ -57,7 +57,7 @@ class AuthenticationTests(BaseCase):
             
     def test_user_can_login(self): 
         with self.client:
-            self.register_user()
+            self.register_lead()
             login = self.login_user()
 
             data = json.loads(login.data.decode())
