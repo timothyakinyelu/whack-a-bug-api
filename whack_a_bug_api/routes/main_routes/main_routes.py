@@ -16,18 +16,22 @@ class ProjectsView(MethodView):
         projects = Project.get_all()
         results = []
         
-        for project in projects:
-            obj = {}
+        if current_user.hasRole('lead'):
+            for project in projects:
+                obj = {}
+                
+                obj['id'] = project.id
+                obj['title'] = project.title
+                obj['created_on'] = project.created_on
+                obj['modified_on'] = project.modified_on
+                
+                results.append(obj)
             
-            obj['id'] = project.id
-            obj['title'] = project.title
-            obj['created_on'] = project.created_on
-            obj['modified_on'] = project.modified_on
-            
-            results.append(obj)
-        
-        res = {'data': results}
-        return make_response(jsonify(res), 200)
+            res = {'data': results}
+            return make_response(jsonify(res), 200)
+        else:
+            res = {'message': 'You do not have access to this action!'}
+            return make_response(jsonify(res), 403)
     
     def post(self):
         form_data = request.get_json()
@@ -73,10 +77,14 @@ class ProjectsView(MethodView):
             return make_response(jsonify(res), 403)
         
     def delete(self):
-        ids = request.json['selectedIDs']
-        data = Project.delete(ids)
-        
-        return make_response(jsonify(data), 202)
+        if current_user.hasRole('lead'):
+            ids = request.json['selectedIDs']
+            data = Project.delete(ids)
+            
+            return make_response(jsonify(data), 202)
+        else:
+            res = {'message': 'You do not have access to this action!'}
+            return make_response(jsonify(res), 403)
 
 class SingleProjectView(MethodView):
     """Class controlling routes for editing and updating projects"""
@@ -84,49 +92,59 @@ class SingleProjectView(MethodView):
     decorators = [login_required]
     
     def get(self, id):
-        project = Project.query.filter_by(id = id).first()
         
-        if project is None:
-            abort(404)
+        if current_user.hasRole('lead'):
+            project = Project.query.filter_by(id = id).first()
             
-        data = {}
-        data['id'] = project.id
-        data['title'] = project.title
-        data['description'] = project.description
-        data['created_on'] = project.created_on
-        
-        res = {
-            'data': data
-        }
-        return make_response(jsonify(res), 200)
-    
-    def put(self, id):
-        form_data = request.get_json()
-        project = Project.query.filter_by(id = id).first()
-        
-        if project is None:
-            abort(404)
-            
-        try:
-            project.title = form_data.get('title')
-            project.description = form_data.get('description')
-            project.save()
-            
+            if project is None:
+                abort(404)
+                
             data = {}
             data['id'] = project.id
             data['title'] = project.title
+            data['description'] = project.description
             data['created_on'] = project.created_on
             
             res = {
-                'data': data,
-                'status': 'success',
-                'message': 'Project updated successfully!'
+                'data': data
             }
-            
             return make_response(jsonify(res), 200)
-        except Exception as e:
-            res = {'message': str(e)}
-            return make_response(jsonify(res), 401)
+        else:
+            res = {'message': 'You do not have access to this action!'}
+            return make_response(jsonify(res), 403)
+    
+    def put(self, id):
+        
+        if current_user.hasRole('lead'):
+            form_data = request.get_json()
+            project = Project.query.filter_by(id = id).first()
+            
+            if project is None:
+                abort(404)
+                
+            try:
+                project.title = form_data.get('title')
+                project.description = form_data.get('description')
+                project.save()
+                
+                data = {}
+                data['id'] = project.id
+                data['title'] = project.title
+                data['created_on'] = project.created_on
+                
+                res = {
+                    'data': data,
+                    'status': 'success',
+                    'message': 'Project updated successfully!'
+                }
+                
+                return make_response(jsonify(res), 200)
+            except Exception as e:
+                res = {'message': str(e)}
+                return make_response(jsonify(res), 401)
+        else:
+            res = {'message': 'You do not have access to this action!'}
+            return make_response(jsonify(res), 403)
      
 
 class BugsView(MethodView):
