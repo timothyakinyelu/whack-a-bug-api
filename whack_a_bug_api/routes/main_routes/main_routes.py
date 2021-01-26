@@ -5,7 +5,7 @@ from whack_a_bug_api.models.users import User
 from whack_a_bug_api.models.bugs import Bug
 from . import main
 from whack_a_bug_api.db import db
-from flask_login import login_required
+from flask_login import login_required, current_user
 
 class ProjectsView(MethodView):
     """Class controlling all api routes for projects"""
@@ -34,39 +34,43 @@ class ProjectsView(MethodView):
         title = form_data.get('title')
         ids = form_data.get('users')
         
-        if title:
-            existing_project = Project.query.filter_by(title = title).first()
-            
-            if existing_project is None:
-                try:
-                    project = Project(title = title)
-                    if ids is not None:
-                        users = User.query.filter(User.id.in_(ids)).all()
-                        project.users.extend(users)
-                    project.save()
-                    
-                    data = {}
-                    data['id'] = project.id
-                    data['title'] = project.title
-                    data['created_on'] = project.created_on
-                    data['modified_on'] = project.modified_on
-                    
-                    res = {
-                        'data': data,
-                        'status': 'success',
-                        'message': 'Project created successfully!',
-                    }
+        if current_user.hasRole('lead'):
+            if title:
+                existing_project = Project.query.filter_by(title = title).first()
+                
+                if existing_project is None:
+                    try:
+                        project = Project(title = title)
+                        if ids is not None:
+                            users = User.query.filter(User.id.in_(ids)).all()
+                            project.users.extend(users)
+                        project.save()
+                        
+                        data = {}
+                        data['id'] = project.id
+                        data['title'] = project.title
+                        data['created_on'] = project.created_on
+                        data['modified_on'] = project.modified_on
+                        
+                        res = {
+                            'data': data,
+                            'status': 'success',
+                            'message': 'Project created successfully!',
+                        }
 
-                    return make_response(jsonify(res), 201)
-                except Exception as e:
-                    res = {'message': str(e)}
-                    return make_response(jsonify(res), 401)
+                        return make_response(jsonify(res), 201)
+                    except Exception as e:
+                        res = {'message': str(e)}
+                        return make_response(jsonify(res), 401)
+                else:
+                    data = {'message': 'Project already exists!'}
+                    return make_response(jsonify(data), 409)
             else:
-                data = {'message': 'Project already exists!'}
-                return make_response(jsonify(data), 409)
+                data = {'message': 'Title is required!'}
+                return make_response(jsonify(data), 400)
         else:
-            data = {'message': 'Title is required!'}
-            return make_response(jsonify(data), 400)
+            res = {'message': 'You do not have access to this action!'}
+            return make_response(jsonify(res), 403)
         
     def delete(self):
         ids = request.json['selectedIDs']
@@ -153,6 +157,7 @@ class BugsView(MethodView):
         title = form_data.get('title')
         projectName = form_data.get('project_name')
         
+        
         if title:
             try:
                 project = Project.query.filter_by(title = projectName).first()
@@ -182,6 +187,7 @@ class BugsView(MethodView):
                     'message': str(e)
                 }
                 return make_response(jsonify(res), 401)
+        
             
 class SingleBugView(MethodView):
     """Class controlling routes for editing and updating bug issues"""
