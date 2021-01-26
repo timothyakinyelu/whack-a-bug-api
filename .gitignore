@@ -10,5 +10,5 @@ __pycache__
 *.coverage
 .DS_Store
 env.sh
-migrations
+# migrations
 *.idea
