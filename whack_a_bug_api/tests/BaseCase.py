@@ -27,14 +27,43 @@ class BaseCase(TestCase):
             db.session.remove()
             db.drop_all()
             
-    def register_user(self):
+    def register_lead(self):
         """create new user for test cases"""
         
         self.user = {
             'first_name': 'Juniper',
             'last_name': 'Lee',
             'email': 'lee.juniper@example.com',
-            'password': 'Jumper1'
+            'password': 'Jumper1',
+            'role_id': '3'
+        }
+        
+        response = self.client.post('/api/auth/register', data = json.dumps(self.user), content_type = 'application/json')
+        return response
+    
+    def register_developer(self):
+        """create new user for test cases"""
+        
+        self.user = {
+            'first_name': 'Chuck',
+            'last_name': 'Hammond',
+            'email': 'hammond.chuck@example.com',
+            'password': 'Jumper1',
+            'role_id': '1'
+        }
+        
+        response = self.client.post('/api/auth/register', data = json.dumps(self.user), content_type = 'application/json')
+        return response
+    
+    def register_tester(self):
+        """create new user for test cases"""
+        
+        self.user = {
+            'first_name': 'Jennifer',
+            'last_name': 'Lee',
+            'email': 'lee.jennifer@example.com',
+            'password': 'Jumper1',
+            'role_id': '2'
         }
         
         response = self.client.post('/api/auth/register', data = json.dumps(self.user), content_type = 'application/json')
