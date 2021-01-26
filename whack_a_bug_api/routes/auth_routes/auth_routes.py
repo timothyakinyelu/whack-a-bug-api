@@ -15,6 +15,7 @@ class RegisterView(MethodView):
             first_name = form_data.get('first_name'),
             last_name = form_data.get('last_name'),
             email = form_data.get('email'),
+            role_id = form_data.get('role_id')
         )
         
         try: 
