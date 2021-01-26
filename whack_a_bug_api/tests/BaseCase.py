@@ -2,6 +2,7 @@ from flask_testing import TestCase
 from whack_a_bug_api.helpers.load_config import loadConfig
 from whack_a_bug_api.db import db
 from whack_a_bug_api import createApp
+from whack_a_bug_api.models.roles import Role
 from flask import json
 
 app = createApp()
@@ -19,6 +20,7 @@ class BaseCase(TestCase):
     
     def setUp(self):
         db.create_all()
+        self.create_roles()
         
     def tearDown(self):
         """ Teardown all initialized variables and tables"""
@@ -109,3 +111,9 @@ class BaseCase(TestCase):
         
         response = self.client.post('/api/main/projects', data = json.dumps(self.project), headers = headers)
         return response
+    
+    def create_roles(self):
+        db.session.add(Role(name = 'developer'))
+        db.session.add(Role(name = 'tester'))
+        db.session.add(Role(name = 'lead'))
+        db.session.commit()
