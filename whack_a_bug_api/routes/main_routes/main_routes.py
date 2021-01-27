@@ -175,7 +175,6 @@ class BugsView(MethodView):
         title = form_data.get('title')
         projectName = form_data.get('project_name')
         
-        
         if title:
             try:
                 project = Project.query.filter_by(title = projectName).first()
@@ -235,7 +234,61 @@ class SingleBugView(MethodView):
         form_data = request.get_json()
         userID = form_data.get('userID')
         projectID = form_data.get('projectID')
+        
+        bug = Bug.query.filter_by(id = id).first()
+        
+        if bug is None:
+            abort(404)
+        else:    
+            if bug.project_id == projectID:
+                if current_user.hasRole('lead'):
+                    if userID:
+                        link = db.session.query(Project).filter_by(id = projectID) \
+                            .filter(Project.users.any(User.id == userID)).first()
+                            
+                        list_of_users = [obj.id for obj in link.users]
+                        
+                        if userID in list_of_users:
+                            bug.assigned_to = userID
+                    
+                        bug.save()
+                        
+                        res = {'message': 'Bug issue updated successfully!'}
+                        return make_response(jsonify(res), 200)
+                else:
+                    res = {'message': 'You do not have access to this action!'}
+                    return make_response(jsonify(res), 403)
+    
+class DeveloperUpdateBugView(MethodView):
+    """ View for developer update of bug issues"""
+    
+    def put(self, id):   
+        form_data = request.get_json()
+        projectID = form_data.get('projectID')
         bugStatus = form_data.get('bugStatus')
+        
+        bug = Bug.query.filter_by(id = id).first()
+        
+        if bug is None:
+            abort(404)
+        else:    
+            if bug.project_id == projectID:
+                if current_user.hasRole('developer'):
+                    bug.bug_status = bugStatus
+                    bug.save()
+                    
+                    res = {'message': 'Bug issue updated successfully!'}
+                    return make_response(jsonify(res), 200)
+                else:
+                    res = {'message': 'You do not have access to this action!'}
+                    return make_response(jsonify(res), 403)
+                
+class TesterUpdateBugView(MethodView):
+    """ View for developer update of bug issues"""
+    
+    def put(self, id):   
+        form_data = request.get_json()
+        projectID = form_data.get('projectID')
         testStatus = form_data.get('testStatus')
         
         bug = Bug.query.filter_by(id = id).first()
@@ -244,29 +297,24 @@ class SingleBugView(MethodView):
             abort(404)
         else:    
             if bug.project_id == projectID:
-                bug.bug_status = bugStatus
-                bug.test_status = testStatus
-                
-                if userID:
-                    link = db.session.query(Project).filter_by(id = projectID) \
-                        .filter(Project.users.any(User.id == userID)).first()
-                        
-                    list_of_users = [obj.id for obj in link.users]
+                if current_user.hasRole('tester'):
+                    bug.test_status = testStatus
+                    bug.save()
                     
-                    if userID in list_of_users:
-                        bug.assigned_to = userID
+                    res = {'message': 'Bug issue updated successfully!'}
+                    return make_response(jsonify(res), 200)
+                else:
+                    res = {'message': 'You do not have access to this action!'}
+                    return make_response(jsonify(res), 403)
                 
-                bug.save()
-                
-                res = {'message': 'Bug issue updated successfully!'}
-                return make_response(jsonify(res), 200)
-            
         
 #define the API resources
 projects_view = ProjectsView.as_view('projects_api')
 single_project_view = SingleProjectView.as_view('single_project_view')
 bugs_view = BugsView.as_view('bugs_api')
 single_bug_view = SingleBugView.as_view('single_bug_view')
+developer_update_view = DeveloperUpdateBugView.as_view('developer_update_view')
+tester_update_view = TesterUpdateBugView.as_view('tester_update_view')
 
 #add url rules for endpoints
 main.add_url_rule(
@@ -284,4 +332,12 @@ main.add_url_rule(
 main.add_url_rule(
     '/api/main/bugs/<int:id>',
     view_func=single_bug_view
+)
+main.add_url_rule(
+    '/api/main/bugs/developer-update/<int:id>',
+    view_func=developer_update_view
+)
+main.add_url_rule(
+    '/api/main/bugs/tester-update/<int:id>',
+    view_func=tester_update_view
 )
