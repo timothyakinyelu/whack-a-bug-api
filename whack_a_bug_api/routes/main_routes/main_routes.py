@@ -15,6 +15,7 @@ class ProjectsView(MethodView):
     def get(self):
         projects = Project.get_all()
         results = []
+        teamIDs = []
         
         if current_user.hasRole('lead'):
             for project in projects:
@@ -24,6 +25,12 @@ class ProjectsView(MethodView):
                 obj['title'] = project.title
                 obj['created_on'] = project.created_on
                 obj['modified_on'] = project.modified_on
+                
+                #note: refactor code to use serializable in model
+                for user in project.users:
+                    teamIDs.append(user.id)
+                    
+                obj['team'] = teamIDs
                 
                 results.append(obj)
             
