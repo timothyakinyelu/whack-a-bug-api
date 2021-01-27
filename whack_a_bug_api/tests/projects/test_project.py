@@ -1,5 +1,5 @@
 from flask import json
-from whack_a_bug_api.tests.baseCase import BaseCase
+from whack_a_bug_api.tests.test_baseCase import BaseCase
 from whack_a_bug_api.models.projects import Project
 from whack_a_bug_api.models.users import User
 from whack_a_bug_api.db import db
@@ -10,10 +10,10 @@ class ProjectTests(BaseCase):
     """Project test units"""
     
     def test_lead_role_user_can_create_project(self):
-        self.register_lead()
+        self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
         
         with self.client:
-            login = self.login_lead()
+            login = self.login_user('lee.juniper@example.com')
             data = json.loads(login.data.decode())
             
             headers = {
@@ -29,10 +29,10 @@ class ProjectTests(BaseCase):
             self.assertIn('Food Blog', data['data']['title'])
 
     def test_other_roles_cannot_create_project(self):
-        self.register_tester()
+        self.register_user('Jennifer', 'Lee', 'lee.jennifer@example.com', 2)
         
         with self.client:
-            login = self.login_tester()
+            login = self.login_user('lee.jennifer@example.com')
             data = json.loads(login.data.decode())
             
             headers = {
@@ -46,10 +46,10 @@ class ProjectTests(BaseCase):
             self.assertEqual(project.status_code, 403)
             
     def test_api_gets_all_projects(self):
-        self.register_lead()
+        self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
         
         with self.client:
-            login = self.login_lead()
+            login = self.login_user('lee.juniper@example.com')
             data = json.loads(login.data.decode())
             
             headers = {
@@ -68,10 +68,10 @@ class ProjectTests(BaseCase):
             
             
     def test_project_can_be_updated(self):
-        self.register_lead()
+        self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
         
         with self.client:
-            login = self.login_lead()
+            login = self.login_user('lee.juniper@example.com')
             data = json.loads(login.data.decode())
             
             headers = {
@@ -89,10 +89,10 @@ class ProjectTests(BaseCase):
     
     
     def test_api_can_get_project_by_id(self):
-        self.register_lead()
+        self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
         
         with self.client:
-            login = self.login_lead()
+            login = self.login_user('lee.juniper@example.com')
             data = json.loads(login.data.decode())
             
             headers = {
@@ -107,7 +107,7 @@ class ProjectTests(BaseCase):
             
             
     def test_api_can_delete_projects(self):
-        self.register_lead()
+        self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
         
         existing_project1 = Project(title = 'Food Blog Design')
         existing_project2 = Project(title = 'Ticketing System')
@@ -117,7 +117,7 @@ class ProjectTests(BaseCase):
         existing_project3.save()
         
         with self.client:
-            login = self.login_lead()
+            login = self.login_user('lee.juniper@example.com')
             data = json.loads(login.data.decode())
             
             headers = {
@@ -136,10 +136,10 @@ class ProjectTests(BaseCase):
             self.assertEqual(resp.status_code, 404)
             
     def test_project_already_exists(self):
-        self.register_lead()
+        self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
         
         with self.client:
-            login = self.login_lead()
+            login = self.login_user('lee.juniper@example.com')
             data = json.loads(login.data.decode())
             
             headers = {
@@ -155,7 +155,7 @@ class ProjectTests(BaseCase):
             self.assertEqual(resp.status_code, 409)
             
     def test_lead_can_assign_users_to_project(self):
-        self.register_lead()
+        self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
         user1 = User(
             first_name = 'Jane',
             last_name = 'Fonda',
@@ -194,7 +194,7 @@ class ProjectTests(BaseCase):
         db.session.commit()
         
         with self.client:
-            login = self.login_lead()
+            login = self.login_user('lee.juniper@example.com')
             login_data = json.loads(login.data.decode())
             
             headers = headers = {

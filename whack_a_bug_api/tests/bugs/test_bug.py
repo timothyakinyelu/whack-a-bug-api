@@ -1,5 +1,5 @@
 from flask import json
-from whack_a_bug_api.tests.baseCase import BaseCase
+from whack_a_bug_api.tests.test_baseCase import BaseCase
 from whack_a_bug_api.models.projects import Project
 from whack_a_bug_api.models.users import User
 from whack_a_bug_api.models.bugs import Bug
@@ -18,10 +18,10 @@ class BugTests(BaseCase):
         return response
         
     def test_bug_issue_can_be_created(self):
-        self.register_lead()
+        self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
         
         with self.client:
-            login = self.login_lead()
+            login = self.login_user('lee.juniper@example.com')
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -41,10 +41,10 @@ class BugTests(BaseCase):
             
             
     def test_all_issues_can_be_fetched(self):
-        self.register_lead()
+        self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
         
         with self.client:
-            login = self.login_lead()
+            login = self.login_user('lee.juniper@example.com')
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -63,18 +63,20 @@ class BugTests(BaseCase):
             self.assertIn('WB1001', data['data'][0]['ticket_ref'])
             
     def test_api_can_fetch_issue_by_id(self):
-        self.register_lead()
+        self.register_user('Chuck', 'Hammond', 'hammond.chuck@example.com', 1)
+        
+        project = Project(title = 'Food Blog Design')
+        db.session.add(project)
+        db.session.commit()
         
         with self.client:
-            login = self.login_lead()
+            login = self.login_user('hammond.chuck@example.com')
             login_data = json.loads(login.data.decode())
             
             headers = {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer {}'.format(login_data['access_token'])
             }
-            
-            self.create_project(headers)
             
             res = self.create_bug(headers)
             
@@ -85,7 +87,7 @@ class BugTests(BaseCase):
             self.assertEqual(res.status_code, 200)
             
     def test_issue_can_be_assigned_to_user(self):
-        self.register_lead()
+        self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
         
         user1 = User(
             first_name = 'Jane',
@@ -114,7 +116,7 @@ class BugTests(BaseCase):
         db.session.commit()
         
         with self.client:
-            login = self.login_lead()
+            login = self.login_user('lee.juniper@example.com')
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -131,6 +133,7 @@ class BugTests(BaseCase):
                 title = 'Fashion Blog Design',
                 users = [3]
             )), headers = headers)
+            
             self.create_bug(headers)
             
             resp = self.client.put('/api/main/bugs/1', data = json.dumps(dict(
@@ -148,14 +151,14 @@ class BugTests(BaseCase):
             self.assertTrue(data['data']['assigned_to'] == 2)
             
     def test_bug_status_can_be_updated(self):
-        self.register_developer()
+        self.register_user('Chuck', 'Hammond', 'hammond.chuck@example.com', 1)
         
         project = Project(title = 'Food Blog Design')
         db.session.add(project)
         db.session.commit()
         
         with self.client:
-            login = self.login_developer()   
+            login = self.login_user('hammond.chuck@example.com')   
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -180,14 +183,14 @@ class BugTests(BaseCase):
             self.assertTrue(data['data']['bug_status'] == 'Ongoing')
             
     def test_bug_status_can_only_be_updated_by_developer(self):
-        self.register_tester()
+        self.register_user('Jennifer', 'Lee', 'lee.jennifer@example.com', 2)
         
         project = Project(title = 'Food Blog Design')
         db.session.add(project)
         db.session.commit()
         
         with self.client:
-            login = self.login_tester()   
+            login = self.login_user('lee.jennifer@example.com')   
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -206,14 +209,14 @@ class BugTests(BaseCase):
             self.assertTrue(data['message'] == 'You do not have access to this action!')
             
     def test_test_status_can_be_updated_to_pending(self):
-        self.register_developer()
+        self.register_user('Chuck', 'Hammond', 'hammond.chuck@example.com', 1)
         
         project = Project(title = 'Food Blog Design')
         db.session.add(project)
         db.session.commit()
             
         with self.client:
-            login = self.login_developer()   
+            login = self.login_user('hammond.chuck@example.com')   
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -239,14 +242,14 @@ class BugTests(BaseCase):
             self.assertTrue(data['data']['test_status'] == 'Pending')
             
     def test_if_bug_issue_can_be_closed(self):
-        self.register_tester()
+        self.register_user('Jennifer', 'Lee', 'lee.jennifer@example.com', 2)
         
         project = Project(title = 'Food Blog Design')
         db.session.add(project)
         db.session.commit()
             
         with self.client:
-            login = self.login_tester()   
+            login = self.login_user('lee.jennifer@example.com')   
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -272,14 +275,14 @@ class BugTests(BaseCase):
             self.assertFalse(getData['data']['closed_on'] == None)
             
     def test_if_bug_issue_can_only_be_closed_by_tester(self):
-        self.register_developer()
+        self.register_user('Chuck', 'Hammond', 'hammond.chuck@example.com', 1)
         
         project = Project(title = 'Food Blog Design')
         db.session.add(project)
         db.session.commit()
             
         with self.client:
-            login = self.login_developer()   
+            login = self.login_user('hammond.chuck@example.com')   
             login_data = json.loads(login.data.decode())
             
             headers = {

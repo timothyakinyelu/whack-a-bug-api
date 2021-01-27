@@ -1,4 +1,4 @@
-from whack_a_bug_api.tests.baseCase import BaseCase
+from whack_a_bug_api.tests.test_baseCase import BaseCase
 from flask import json
 from whack_a_bug_api.models.users import User
 from whack_a_bug_api.db import db
@@ -9,18 +9,18 @@ class AuthenticationTests(BaseCase):
     """Test all authentication routes"""
     
     def test_user_can_be_registered(self):
-        res = self.register_lead()
+        res = self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
         data = json.loads(res.data.decode())
         
         self.assertEqual(res.status_code, 201)
         self.assertEqual(data['message'], 'User registered successfully!')
             
     def test_user_already_exists(self):
-        res = self.register_lead()
+        res = self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
         self.assertEqual(res.status_code, 201)
         
         try:
-            resp = self.register_lead()
+            resp = self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
             data = json.loads(resp.data.decode())
         except AssertionError as a:
             self.assertEqual(str(a), 'This username already exists!')
@@ -57,8 +57,8 @@ class AuthenticationTests(BaseCase):
             
     def test_user_can_login(self): 
         with self.client:
-            self.register_lead()
-            login = self.login_lead()
+            self.register_user('Juniper', 'Lee', 'lee.juniper@example.com', 3)
+            login = self.login_user('lee.juniper@example.com')
 
             data = json.loads(login.data.decode())
             
@@ -69,7 +69,7 @@ class AuthenticationTests(BaseCase):
             
     def test_unregistered_user_cannot_login(self):
         with self.client:
-            login = self.login_lead()
+            login = self.login_user('lee.juniper@example.com')
             data = json.loads(login.data.decode())
             
             self.assertEqual(login.status_code, 402)
