@@ -2,9 +2,9 @@ name: Whack a bug API
 
 on:
   push:
-    branches: [master, dev]
+    branches: [main, dev]
   pull:
-    brances: [master, dev]
+    brances: [main, dev]
 
 jobs:
   build:
