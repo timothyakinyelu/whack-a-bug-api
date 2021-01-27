@@ -26,6 +26,7 @@ class TestConfig(BaseConfig):
     """App cofiguration in test mode"""
     
     SQLALCHEMY_DATABASE_URI = "sqlite:///test.sqlite"
+    SECRET_KEY = "jk%m&l98"
     TESTING = True
     DEBUG = True
     HASH_ROUNDS = 1
