@@ -10,8 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    working-directory: ~/whack_a_bug_api
-
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.8
