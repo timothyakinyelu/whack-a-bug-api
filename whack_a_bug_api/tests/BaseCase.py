@@ -30,7 +30,7 @@ class BaseCase(TestCase):
             db.drop_all()
             
     def register_lead(self):
-        """create new user for test cases"""
+        """create new lead for test cases"""
         
         self.user = {
             'first_name': 'Juniper',
@@ -44,7 +44,7 @@ class BaseCase(TestCase):
         return response
     
     def register_developer(self):
-        """create new user for test cases"""
+        """create new developer user for test cases"""
         
         self.user = {
             'first_name': 'Chuck',
@@ -58,7 +58,7 @@ class BaseCase(TestCase):
         return response
     
     def register_tester(self):
-        """create new user for test cases"""
+        """create new tester for test cases"""
         
         self.user = {
             'first_name': 'Jennifer',
@@ -72,7 +72,7 @@ class BaseCase(TestCase):
         return response
     
     def login_lead(self):
-        """login a test case user"""
+        """login a test case lead"""
         
         self.user = {
             'email': 'lee.juniper@example.com',
@@ -83,7 +83,7 @@ class BaseCase(TestCase):
         return response
     
     def login_developer(self):
-        """login a test case user"""
+        """login a test case developer"""
         
         self.user = {
             'email': 'hammond.chuck@example.com',
@@ -94,7 +94,7 @@ class BaseCase(TestCase):
         return response
     
     def login_tester(self):
-        """login a test case user"""
+        """login a test case tester"""
         
         self.user = {
             'email': 'lee.jennifer@example.com',
