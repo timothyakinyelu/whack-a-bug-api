@@ -18,10 +18,10 @@ class BugTests(BaseCase):
         return response
         
     def test_bug_issue_can_be_created(self):
-        self.register_user()
+        self.register_lead()
         
         with self.client:
-            login = self.login_user()
+            login = self.login_lead()
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -41,10 +41,10 @@ class BugTests(BaseCase):
             
             
     def test_all_issues_can_be_fetched(self):
-        self.register_user()
+        self.register_lead()
         
         with self.client:
-            login = self.login_user()
+            login = self.login_lead()
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -63,10 +63,10 @@ class BugTests(BaseCase):
             self.assertIn('WB1001', data['data'][0]['ticket_ref'])
             
     def test_api_can_fetch_issue_by_id(self):
-        self.register_user()
+        self.register_lead()
         
         with self.client:
-            login = self.login_user()
+            login = self.login_lead()
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -85,25 +85,28 @@ class BugTests(BaseCase):
             self.assertEqual(res.status_code, 200)
             
     def test_issue_can_be_assigned_to_user(self):
-        self.register_user()
+        self.register_lead()
         
         user1 = User(
             first_name = 'Jane',
             last_name = 'Fonda',
             email = 'fonda.jane@example.com',
-            password = 'Rocky12'
+            password = 'Rocky12',
+            role_id = 1
         )
         user2 = User(
             first_name = 'Luke',
             last_name = 'Skywalker',
             email = 'skywalker.luke@example.com',
-            password = 'Darthfather1'
+            password = 'Darthfather1',
+            role_id = 1
         )
         user3 = User(
             first_name = 'Naruto',
             last_name = 'Uzumaki',
             email = 'uzumaki.naruto@example.com',
-            password = 'Rasengan1'
+            password = 'Rasengan1',
+            role_id = 1
         )
         db.session.add(user1)
         db.session.add(user2)
@@ -111,7 +114,7 @@ class BugTests(BaseCase):
         db.session.commit()
         
         with self.client:
-            login = self.login_user()
+            login = self.login_lead()
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -145,10 +148,14 @@ class BugTests(BaseCase):
             self.assertTrue(data['data']['assigned_to'] == 2)
             
     def test_bug_status_can_be_updated(self):
-        self.register_user()
+        self.register_developer()
+        
+        project = Project(title = 'Food Blog Design')
+        db.session.add(project)
+        db.session.commit()
         
         with self.client:
-            login = self.login_user()   
+            login = self.login_developer()   
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -156,9 +163,8 @@ class BugTests(BaseCase):
                 'Authorization': 'Bearer {}'.format(login_data['access_token'])
             }
             
-            self.create_project(headers)
             self.create_bug(headers)
-            resp = self.client.put('/api/main/bugs/1', data = json.dumps(dict(
+            resp = self.client.put('/api/main/bugs/developer-update/1', data = json.dumps(dict(
                 bugStatus = 'Ongoing',
                 projectID = 1
             )), headers = headers)
@@ -173,11 +179,15 @@ class BugTests(BaseCase):
             self.assertEqual('Unable to login', data['data']['title'])
             self.assertTrue(data['data']['bug_status'] == 'Ongoing')
             
-    def test_test_status_can_be_updated(self):
-        self.register_user()
-            
+    def test_bug_status_can_only_be_updated_by_developer(self):
+        self.register_tester()
+        
+        project = Project(title = 'Food Blog Design')
+        db.session.add(project)
+        db.session.commit()
+        
         with self.client:
-            login = self.login_user()   
+            login = self.login_tester()   
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -185,9 +195,34 @@ class BugTests(BaseCase):
                 'Authorization': 'Bearer {}'.format(login_data['access_token'])
             }
             
-            self.create_project(headers)
             self.create_bug(headers)
-            resp = self.client.put('/api/main/bugs/1', data = json.dumps(dict(
+            resp = self.client.put('/api/main/bugs/developer-update/1', data = json.dumps(dict(
+                bugStatus = 'Ongoing',
+                projectID = 1
+            )), headers = headers)
+            data = json.loads(resp.data.decode())
+            
+            self.assertEqual(resp.status_code, 403)
+            self.assertTrue(data['message'] == 'You do not have access to this action!')
+            
+    def test_test_status_can_be_updated_to_pending(self):
+        self.register_developer()
+        
+        project = Project(title = 'Food Blog Design')
+        db.session.add(project)
+        db.session.commit()
+            
+        with self.client:
+            login = self.login_developer()   
+            login_data = json.loads(login.data.decode())
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer {}'.format(login_data['access_token'])
+            }
+            
+            self.create_bug(headers)
+            resp = self.client.put('/api/main/bugs/developer-update/1', data = json.dumps(dict(
                 bugStatus = 'Awaiting Test',
                 projectID = 1
             )), headers = headers)
@@ -204,10 +239,14 @@ class BugTests(BaseCase):
             self.assertTrue(data['data']['test_status'] == 'Pending')
             
     def test_if_bug_issue_can_be_closed(self):
-        self.register_user()
+        self.register_tester()
+        
+        project = Project(title = 'Food Blog Design')
+        db.session.add(project)
+        db.session.commit()
             
         with self.client:
-            login = self.login_user()   
+            login = self.login_tester()   
             login_data = json.loads(login.data.decode())
             
             headers = {
@@ -215,9 +254,8 @@ class BugTests(BaseCase):
                 'Authorization': 'Bearer {}'.format(login_data['access_token'])
             }
             
-            self.create_project(headers)
             self.create_bug(headers)
-            resp = self.client.put('/api/main/bugs/1', data = json.dumps(dict(
+            resp = self.client.put('/api/main/bugs/tester-update/1', data = json.dumps(dict(
                 testStatus = 'Passed',
                 projectID = 1
             )), headers = headers)
@@ -232,3 +270,29 @@ class BugTests(BaseCase):
             self.assertEqual('Unable to login', getData['data']['title'])
             self.assertTrue(getData['data']['test_status'] == 'Passed')
             self.assertFalse(getData['data']['closed_on'] == None)
+            
+    def test_if_bug_issue_can_only_be_closed_by_tester(self):
+        self.register_developer()
+        
+        project = Project(title = 'Food Blog Design')
+        db.session.add(project)
+        db.session.commit()
+            
+        with self.client:
+            login = self.login_developer()   
+            login_data = json.loads(login.data.decode())
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer {}'.format(login_data['access_token'])
+            }
+            
+            self.create_bug(headers)
+            resp = self.client.put('/api/main/bugs/tester-update/1', data = json.dumps(dict(
+                testStatus = 'Passed',
+                projectID = 1
+            )), headers = headers)
+            data = json.loads(resp.data.decode())
+            
+            self.assertEqual(resp.status_code, 403)
+            self.assertTrue(data['message'] == 'You do not have access to this action!')
