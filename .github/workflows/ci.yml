@@ -3,7 +3,7 @@ name: Whack a bug API
 on:
   push:
     branches: [main, dev]
-  pull:
+  pull_request:
     brances: [main, dev]
 
 jobs:
