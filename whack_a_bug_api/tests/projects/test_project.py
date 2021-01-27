@@ -213,7 +213,10 @@ class ProjectTests(BaseCase):
             self.assertEqual(resp.status_code, 201)
             self.assertIn('Food Blog Design', data['data']['title'])
             
-            link = db.session.query(project_user_table).all()
-            if link:
-                self.assertEqual(link[1].user_id, user2.id)
+            res = self.client.get('/api/main/projects', headers = headers)
+            self.assertEqual(res.status_code, 200)
+            
+            # note: later check if user instance is present and not id
+            data = json.loads(res.data.decode())   
+            self.assertIn(user2.id, data['data'][0]['team'])
             
